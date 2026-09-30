@@ -34,3 +34,4 @@ jobs:
         env:
           DATABASE_URL: postgresql+asyncpg://vault:vault@localhost:5432/vault
           JWT_SECRET: ci-only-secret
+          ENCRYPTION_KEY: 7kUGuh_Ii-U9S_GWRTimitnt0VRydFpODz_FPgHB_Qo=
