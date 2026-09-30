@@ -122,6 +122,7 @@ tests/
 Dockerfile
 docker-compose.yml
 pyproject.toml
+```
 
 ## Current scope
 
