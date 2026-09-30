@@ -1,6 +1,6 @@
 # Vault API
 
-A production grade REST API for secure data management, built with FastAPI and PostgreSQL.
+A secure REST API for secret management, built with FastAPI and PostgreSQL.
 
 Vault provides authenticated users with a private space for storing secrets. Passwords are protected with Argon2, access is controlled with JWT tokens, and secret values are encrypted before they are stored in PostgreSQL.
 
@@ -86,11 +86,13 @@ print(Fernet.generate_key().decode())
 
 ## Testing
 
-Run the test suite with:
+Run the complete test suite with:
 
 ```bash
 pytest
 ```
+
+The integration suite covers registration, authentication, secret creation, retrieval, update, deletion, and access isolation between users.
 
 Static checks use Ruff:
 
@@ -98,7 +100,7 @@ Static checks use Ruff:
 ruff check .
 ```
 
-GitHub Actions runs both checks against a real PostgreSQL service for every push to `main` and every pull request.
+GitHub Actions runs the full test suite against a real PostgreSQL service for every push to `main` and every pull request.
 
 ## Project structure
 
@@ -115,14 +117,14 @@ app/
 tests/
   test_health.py
   test_security.py
+  test_secrets.py
 
 Dockerfile
 docker-compose.yml
 pyproject.toml
-```
 
 ## Current scope
 
 Vault currently provides the core service layer for authenticated secret storage. Database schema creation is handled during application startup for this first version.
 
-The next engineering stages can introduce migration management, rate limiting, audit logging, refresh tokens, stronger deployment configuration, and broader integration coverage.
+Future engineering work could introduce migration management, rate limiting, audit logging, refresh tokens, stronger deployment configuration, and additional integration coverage.
