@@ -17,7 +17,8 @@ services:
     build: .
     environment:
       DATABASE_URL: postgresql+asyncpg://vault:vault@db:5432/vault
-      JWT_SECRET: change-this-before-production
+      JWT_SECRET: local-development-secret
+      ENCRYPTION_KEY: 7kUGuh_Ii-U9S_GWRTimitnt0VRydFpODz_FPgHB_Qo=
       ENVIRONMENT: development
     ports:
       "8000:8000"
