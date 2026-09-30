@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
+from app.crypto import decrypt_value, encrypt_value
 from app.db import Base, engine, get_session
 from app.models import Secret, User
 from app.schemas import SecretCreate, SecretRead, Token, UserCreate
@@ -60,14 +61,18 @@ async def current_user(token: Annotated[str, Depends(oauth2_scheme)], session: S
 
 @app.post("/secrets", response_model=SecretRead, status_code=status.HTTP_201_CREATED)
 async def create_secret(data: SecretCreate, user: Annotated[User, Depends(current_user)], session: Session) -> Secret:
-    secret = Secret(owner_id=user.id, name=data.name, value=data.value)
+    secret = Secret(owner_id=user.id, name=data.name, value=encrypt_value(data.value))
     session.add(secret)
     await session.commit()
     await session.refresh(secret)
+    secret.value = decrypt_value(secret.value)
     return secret
 
 
 @app.get("/secrets", response_model=list[SecretRead])
-async def list_secrets(user: Annotated[User, Depends(current_user)], session: Session) -> list[Secret]:
+async def list_secrets(user: Annotated[User, Depends(current_user)], session: Session) -> list[SecretRead]:
     result = await session.scalars(select(Secret).where(Secret.owner_id == user.id).order_by(Secret.id))
-    return list(result)
+    return [
+        SecretRead.model_validate({**secret.__dict__, "value": decrypt_value(secret.value)})
+        for secret in result
+    ]
