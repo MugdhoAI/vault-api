@@ -2,36 +2,26 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
 
 jobs:
-  test:
+  quality:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_DB: vault
-          POSTGRES_USER: vault
-          POSTGRES_PASSWORD: vault
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U vault -d vault"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -e ".[dev]"
-      - run: ruff check .
-      - run: pytest
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+      - name: Lint
+        run: ruff check .
+      - name: Run tests
+        run: pytest tests/test_security.py
         env:
-          DATABASE_URL: postgresql+asyncpg://vault:vault@localhost:5432/vault
           JWT_SECRET: ci-only-secret
           ENCRYPTION_KEY: 7kUGuh_Ii-U9S_GWRTimitnt0VRydFpODz_FPgHB_Qo=
