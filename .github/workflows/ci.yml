@@ -9,6 +9,20 @@ on:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: vault
+          POSTGRES_USER: vault
+          POSTGRES_PASSWORD: vault
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U vault -d vault"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,7 +35,8 @@ jobs:
       - name: Lint
         run: ruff check .
       - name: Run tests
-        run: pytest tests/test_security.py
+        run: pytest
         env:
+          DATABASE_URL: postgresql+asyncpg://vault:vault@localhost:5432/vault
           JWT_SECRET: ci-only-secret
           ENCRYPTION_KEY: 7kUGuh_Ii-U9S_GWRTimitnt0VRydFpODz_FPgHB_Qo=
