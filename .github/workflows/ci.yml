@@ -16,7 +16,7 @@ jobs:
           POSTGRES_USER: vault
           POSTGRES_PASSWORD: vault
         ports:
-          5432:5432
+          - 5432:5432
         options: >-
           --health-cmd "pg_isready -U vault -d vault"
           --health-interval 5s
