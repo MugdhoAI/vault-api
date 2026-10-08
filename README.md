@@ -1,44 +1,49 @@
 # Vault API
 
-A secure REST API for secret management, built with FastAPI and PostgreSQL.
+A secure REST API for storing and managing secrets with FastAPI and PostgreSQL.
 
-Vault provides authenticated users with a private space for storing secrets. Passwords are protected with Argon2, access is controlled with JWT tokens, and secret values are encrypted before they are stored in PostgreSQL.
+Vault provides authenticated users with a private space for their secrets. Passwords are protected with Argon2, access is controlled with JWT tokens, and secret values are encrypted before they are stored in PostgreSQL.
 
 ## What it demonstrates
 
-Vault is built as a small backend system rather than a simple CRUD example. The project focuses on authentication, authorization, encrypted persistence, asynchronous database access, validation, testing, Docker based development, and continuous integration.
+This project is built as a small backend system rather than a basic CRUD example.
+
+It focuses on:
+
+* Authentication and authorization
+* Encrypted persistence
+* Asynchronous database access
+* Input validation
+* Integration testing
+* Docker based development
+* Continuous integration
 
 ## Stack
 
-Python 3.12
-FastAPI
-PostgreSQL
-SQLAlchemy 2
-Pydantic
-Argon2
-JWT
-Fernet encryption
-pytest
-Docker
-GitHub Actions
+* Python 3.12
+* FastAPI
+* PostgreSQL
+* SQLAlchemy 2
+* Pydantic
+* Argon2
+* JWT
+* Fernet encryption
+* pytest
+* Docker
+* GitHub Actions
 
 ## API
 
-`GET /health` checks service availability.
-
-`POST /auth/register` creates a user account and returns an access token.
-
-`POST /auth/token` authenticates an existing user.
-
-`POST /secrets` stores an encrypted secret for the authenticated user.
-
-`GET /secrets` lists the authenticated user's secrets.
-
-`GET /secrets/{secret_id}` returns one secret owned by the authenticated user.
-
-`PATCH /secrets/{secret_id}` updates a secret.
-
-`DELETE /secrets/{secret_id}` removes a secret.
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| GET | `/health` | Check service availability |
+| POST | `/auth/register` | Create a user and return an access token |
+| POST | `/auth/token` | Authenticate an existing user |
+| POST | `/secrets` | Store an encrypted secret |
+| GET | `/secrets` | List the authenticated user's secrets |
+| GET | `/secrets/{secret_id}` | Return one secret owned by the authenticated user |
+| PATCH | `/secrets/{secret_id}` | Update a secret |
+| DELETE | `/secrets/{secret_id}` | Delete a secret |
 
 FastAPI also provides interactive API documentation at `/docs` while the application is running.
 
@@ -46,15 +51,15 @@ FastAPI also provides interactive API documentation at `/docs` while the applica
 
 Passwords are never stored directly. They are hashed with Argon2.
 
-Secret values are encrypted before database persistence. The encryption key is supplied through the environment and is not part of the application source.
+Secret values are encrypted before database persistence. The encryption key comes from the environment and is not part of the application source.
 
-Every secret query is scoped to the authenticated user's ID. A valid token alone does not grant access to another user's records.
+Every secret query is scoped to the authenticated user's ID. A valid token does not grant access to another user's records.
 
-The development Docker configuration contains a local encryption key only to make the project immediately runnable. Production deployments should provide their own secret values through a proper secret manager or environment configuration.
+The development Docker configuration includes a local encryption key so the project can run immediately. Production deployments should provide their own secrets through appropriate environment configuration or a secret manager.
 
 ## Run locally
 
-Install the development dependencies:
+Create a virtual environment and install the development dependencies:
 
 ```bash
 python -m venv .venv
@@ -69,9 +74,9 @@ docker compose up --build
 
 The API will be available at `http://localhost:8000`.
 
-Open `http://localhost:8000/docs` to use the interactive API documentation.
+Open `http://localhost:8000/docs` for the interactive API documentation.
 
-For a non Docker setup, copy `.env.example` to `.env`, provide a PostgreSQL connection string, generate a Fernet encryption key, and start the application with:
+For a non Docker setup, copy `.env.example` to `.env`, provide a PostgreSQL connection string, generate a Fernet encryption key, and start the application:
 
 ```bash
 uvicorn app.main:app --reload
@@ -86,13 +91,11 @@ print(Fernet.generate_key().decode())
 
 ## Testing
 
-Run the complete test suite with:
+Run the complete test suite:
 
 ```bash
 pytest
 ```
-
-The integration suite covers registration, authentication, secret creation, retrieval, update, deletion, and access isolation between users.
 
 Static checks use Ruff:
 
@@ -100,7 +103,9 @@ Static checks use Ruff:
 ruff check .
 ```
 
-GitHub Actions runs the full test suite against a real PostgreSQL service for every push to `main` and every pull request.
+The integration suite covers registration, authentication, secret creation, retrieval, update, deletion, and access isolation between users.
+
+GitHub Actions runs the test suite against a real PostgreSQL service for every push to `main` and every pull request.
 
 ## Project structure
 
@@ -126,6 +131,10 @@ pyproject.toml
 
 ## Current scope
 
-Vault currently provides the core service layer for authenticated secret storage. Database schema creation is handled during application startup for this first version.
+Vault currently provides the core service layer for authenticated secret storage. Database schema creation happens during application startup in this first version.
 
 Future engineering work could introduce migration management, rate limiting, audit logging, refresh tokens, stronger deployment configuration, and additional integration coverage.
+
+## License
+
+MIT
