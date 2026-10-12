@@ -40,3 +40,8 @@ def test_production_rejects_short_jwt_secret() -> None:
             jwt_secret="short-secret",
             encryption_key=Fernet.generate_key().decode(),
         )
+
+
+def test_access_token_lifetime_must_be_positive() -> None:
+    with pytest.raises(ValidationError, match="access_token_minutes"):
+        Settings(access_token_minutes=0)
