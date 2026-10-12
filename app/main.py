@@ -15,6 +15,7 @@ from app.models import Secret, User
 from app.schemas import SecretCreate, SecretRead, SecretUpdate, Token, UserCreate
 from app.security import create_access_token, decode_subject, hash_password, verify_password
 
+
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     async with engine.begin() as connection:
