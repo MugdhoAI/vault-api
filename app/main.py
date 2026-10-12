@@ -1,4 +1,5 @@
-from typing import Annotated
+from contextlib import asynccontextmanager
+from typing import Annotated, AsyncIterator
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -13,15 +14,19 @@ from app.models import Secret, User
 from app.schemas import SecretCreate, SecretRead, SecretUpdate, Token, UserCreate
 from app.security import create_access_token, decode_subject, hash_password, verify_password
 
-app = FastAPI(title=get_settings().app_name, version="0.1.0")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
-Session = Annotated[AsyncSession, Depends(get_session)]
-
-
-@app.on_event("startup")
-async def create_tables() -> None:
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
+    try:
+        yield
+    finally:
+        await engine.dispose()
+
+
+app = FastAPI(title=get_settings().app_name, version="0.1.0", lifespan=lifespan)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
+Session = Annotated[AsyncSession, Depends(get_session)]
 
 
 @app.get("/health")
