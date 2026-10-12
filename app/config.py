@@ -21,7 +21,7 @@ class Settings(BaseSettings):
             return self
 
         if self.jwt_secret == "change-this-in-production" or len(self.jwt_secret) < 32:
-            raise ValueError("Production JWT_SECRET must be a unique value of at least 32 characters")
+            raise ValueError("Production JWT_SECRET must not use the default and must be at least 32 characters")
 
         try:
             Fernet(self.encryption_key.encode())
