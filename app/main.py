@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select, text
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
@@ -42,9 +42,15 @@ async def register(data: UserCreate, session: Session) -> Token:
     existing = await session.scalar(select(User).where(User.email == data.email))
     if existing:
         raise HTTPException(status_code=409, detail="Email is already registered")
+
     user = User(email=data.email, password_hash=hash_password(data.password))
     session.add(user)
-    await session.commit()
+    try:
+        await session.commit()
+    except IntegrityError as exc:
+        await session.rollback()
+        raise HTTPException(status_code=409, detail="Email is already registered") from exc
+
     return Token(access_token=create_access_token(data.email))
 
 
