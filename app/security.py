@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from jose import JWTError, jwt
 from pwdlib import PasswordHash
@@ -18,7 +18,7 @@ def verify_password(password: str, hashed: str) -> bool:
 
 def create_access_token(subject: str) -> str:
     settings = get_settings()
-    expires = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_minutes)
+    expires = datetime.now(UTC) + timedelta(minutes=settings.access_token_minutes)
     payload = {"sub": subject, "exp": expires}
     return jwt.encode(payload, settings.jwt_secret, algorithm="HS256")
 
