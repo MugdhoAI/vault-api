@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from app.config import Settings
 
 
-def test_production_requires_a_unique_jwt_secret() -> None:
+def test_production_rejects_default_jwt_secret() -> None:
     with pytest.raises(ValidationError, match="Production JWT_SECRET"):
         Settings(
             environment="production",
@@ -31,3 +31,12 @@ def test_production_accepts_configured_secrets() -> None:
     )
 
     assert settings.environment == "production"
+
+
+def test_production_rejects_short_jwt_secret() -> None:
+    with pytest.raises(ValidationError, match="Production JWT_SECRET"):
+        Settings(
+            environment="production",
+            jwt_secret="short-secret",
+            encryption_key=Fernet.generate_key().decode(),
+        )
