@@ -2,7 +2,8 @@ from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy import select
+from sqlalchemy import select, text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
@@ -25,6 +26,14 @@ async def create_tables() -> None:
 
 @app.get("/health")
 async def health() -> dict[str, str]:
+    try:
+        async with engine.connect() as connection:
+            await connection.execute(text("SELECT 1"))
+    except SQLAlchemyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database unavailable",
+        ) from exc
     return {"status": "ok"}
 
 
