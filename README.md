@@ -1,22 +1,18 @@
 # Vault API
 
-A secure REST API for storing and managing secrets with FastAPI and PostgreSQL.
+A FastAPI REST API for authenticated secret storage, using PostgreSQL, Argon2 password hashing, JWT authentication, and Fernet encryption.
 
-Vault provides authenticated users with a private space for their secrets. Passwords are protected with Argon2, access is controlled with JWT tokens, and secret values are encrypted before they are stored in PostgreSQL.
+This project demonstrates backend engineering fundamentals through an asynchronous API, owner-scoped data access, request validation, integration tests, Docker based development, and continuous integration.
 
 ## What it demonstrates
 
-This project is built as a small backend system rather than a basic CRUD example.
-
-It focuses on:
-
-* Authentication and authorization
-* Encrypted persistence
-* Asynchronous database access
-* Input validation
-* Integration testing
-* Docker based development
-* Continuous integration
+* User registration and authentication
+* Authorization and per-user data isolation
+* Encryption of secret values before database persistence
+* Asynchronous database access with SQLAlchemy
+* Request validation and predictable API errors
+* PostgreSQL-backed integration testing
+* Containerized local development and CI
 
 ## Stack
 
@@ -45,17 +41,17 @@ It focuses on:
 | PATCH | `/secrets/{secret_id}` | Update a secret |
 | DELETE | `/secrets/{secret_id}` | Delete a secret |
 
-FastAPI also provides interactive API documentation at `/docs` while the application is running.
+FastAPI exposes interactive API documentation at `/docs` while the application is running.
 
 ## Security model
 
-Passwords are never stored directly. They are hashed with Argon2.
+Passwords are hashed with Argon2 rather than stored as plain text. Secret values are encrypted before they are persisted to PostgreSQL. The application scopes secret queries to the authenticated user's ID, and does not grant access to another user's records just because a valid token is supplied.
 
-Secret values are encrypted before database persistence. The encryption key comes from the environment and is not part of the application source.
+The API decrypts a secret when returning it to its authenticated owner. This is server-side encryption, not end-to-end encryption.
 
-Every secret query is scoped to the authenticated user's ID. A valid token does not grant access to another user's records.
+The Docker Compose configuration contains credentials and an encryption key intended only for local development. Do not reuse these values in a deployed environment. Use unique secrets supplied through an appropriate secret manager or deployment configuration.
 
-The development Docker configuration includes a local encryption key so the project can run immediately. Production deployments should provide their own secrets through appropriate environment configuration or a secret manager.
+The encryption key is required to decrypt stored values. Losing it can make those values unrecoverable. This version does not provide an encryption key rotation workflow.
 
 ## Run locally
 
@@ -72,17 +68,15 @@ Start PostgreSQL and the API with Docker:
 docker compose up --build
 ```
 
-The API will be available at `http://localhost:8000`.
+The API will be available at `http://localhost:8000`. Open `http://localhost:8000/docs` for the interactive API documentation.
 
-Open `http://localhost:8000/docs` for the interactive API documentation.
-
-For a non Docker setup, copy `.env.example` to `.env`, provide a PostgreSQL connection string, generate a Fernet encryption key, and start the application:
+For a non-Docker setup, copy `.env.example` to `.env`, provide a PostgreSQL connection string and a generated Fernet key, then run:
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-Generate an encryption key with:
+Generate a Fernet key with:
 
 ```python
 from cryptography.fernet import Fernet
@@ -91,21 +85,33 @@ print(Fernet.generate_key().decode())
 
 ## Testing
 
-Run the complete test suite:
+Run the test suite:
 
 ```bash
 pytest
 ```
 
-Static checks use Ruff:
+Run static checks with Ruff:
 
 ```bash
 ruff check .
 ```
 
-The test suite covers password hashing, token handling, production configuration validation, duplicate registration, invalid credentials, the database health check, secret creation, retrieval, update, deletion, and access isolation between users.
+Tests cover password hashing, token handling, configuration validation, duplicate registration, invalid credentials, database health, secret CRUD operations, owner isolation, and request schema validation. GitHub Actions runs Ruff and the PostgreSQL-backed test suite for pushes to `main` and pull requests.
 
-GitHub Actions runs the test suite against a real PostgreSQL service for every push to `main` and every pull request.
+## Current limitations
+
+**This project is not production ready.** It is a learning and portfolio project that demonstrates a core authenticated secret storage API. A passing test suite does not establish production readiness.
+
+Known gaps include:
+
+* Database tables are created at application startup. There is no versioned migration workflow yet.
+* Authentication endpoints do not have rate limiting or brute-force protection.
+* Security-sensitive actions are not recorded in an audit log.
+* Encryption key rotation and recovery procedures are not implemented.
+* Production deployment hardening, including TLS termination, operational monitoring, backup and restore validation, and deployment-specific secret management, has not been established by this repository.
+
+These are follow-up engineering requirements, not implemented features. They should be addressed and tested before considering a real deployment with sensitive data.
 
 ## Project structure
 
@@ -123,6 +129,7 @@ tests/
   test_auth.py
   test_config.py
   test_health.py
+  test_schema_validation.py
   test_security.py
   test_secrets.py
 
@@ -130,12 +137,6 @@ Dockerfile
 docker-compose.yml
 pyproject.toml
 ```
-
-## Current scope
-
-Vault currently provides the core service layer for authenticated secret storage. Database schema creation happens during application startup in this first version.
-
-Future engineering work could introduce migration management, rate limiting, audit logging, refresh tokens, stronger deployment configuration, and additional integration coverage.
 
 ## License
 
