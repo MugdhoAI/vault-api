@@ -32,3 +32,15 @@ def test_login_rejects_invalid_password() -> None:
     assert registered.status_code == 201
     assert invalid_login.status_code == 401
     assert invalid_login.json()["detail"] == "Invalid credentials"
+
+
+def test_secret_endpoints_reject_missing_or_invalid_tokens() -> None:
+    with TestClient(app) as client:
+        missing_token = client.get("/secrets")
+        invalid_token = client.get(
+            "/secrets",
+            headers={"Authorization": "Bearer not-a-valid-token"},
+        )
+
+    assert missing_token.status_code == 401
+    assert invalid_token.status_code == 401
