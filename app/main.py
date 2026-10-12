@@ -1,8 +1,11 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy import select
+from sqlalchemy import select, text
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
@@ -12,19 +15,32 @@ from app.models import Secret, User
 from app.schemas import SecretCreate, SecretRead, SecretUpdate, Token, UserCreate
 from app.security import create_access_token, decode_subject, hash_password, verify_password
 
-app = FastAPI(title=get_settings().app_name, version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    async with engine.begin() as connection:
+        await connection.run_sync(Base.metadata.create_all)
+    try:
+        yield
+    finally:
+        await engine.dispose()
+
+
+app = FastAPI(title=get_settings().app_name, version="0.1.0", lifespan=lifespan)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 Session = Annotated[AsyncSession, Depends(get_session)]
 
 
-@app.on_event("startup")
-async def create_tables() -> None:
-    async with engine.begin() as connection:
-        await connection.run_sync(Base.metadata.create_all)
-
-
 @app.get("/health")
 async def health() -> dict[str, str]:
+    try:
+        async with engine.connect() as connection:
+            await connection.execute(text("SELECT 1"))
+    except SQLAlchemyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database unavailable",
+        ) from exc
     return {"status": "ok"}
 
 
@@ -33,9 +49,15 @@ async def register(data: UserCreate, session: Session) -> Token:
     existing = await session.scalar(select(User).where(User.email == data.email))
     if existing:
         raise HTTPException(status_code=409, detail="Email is already registered")
+
     user = User(email=data.email, password_hash=hash_password(data.password))
     session.add(user)
-    await session.commit()
+    try:
+        await session.commit()
+    except IntegrityError as exc:
+        await session.rollback()
+        raise HTTPException(status_code=409, detail="Email is already registered") from exc
+
     return Token(access_token=create_access_token(data.email))
 
 

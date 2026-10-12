@@ -36,7 +36,7 @@ It focuses on:
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
-| GET | `/health` | Check service availability |
+| GET | `/health` | Check service and database availability |
 | POST | `/auth/register` | Create a user and return an access token |
 | POST | `/auth/token` | Authenticate an existing user |
 | POST | `/secrets` | Store an encrypted secret |
@@ -103,7 +103,7 @@ Static checks use Ruff:
 ruff check .
 ```
 
-The integration suite covers registration, authentication, secret creation, retrieval, update, deletion, and access isolation between users.
+The test suite covers password hashing, token handling, production configuration validation, duplicate registration, invalid credentials, the database health check, secret creation, retrieval, update, deletion, and access isolation between users.
 
 GitHub Actions runs the test suite against a real PostgreSQL service for every push to `main` and every pull request.
 
@@ -120,6 +120,8 @@ app/
   security.py     Password hashing and JWT handling
 
 tests/
+  test_auth.py
+  test_config.py
   test_health.py
   test_security.py
   test_secrets.py
