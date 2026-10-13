@@ -113,11 +113,11 @@ Tests cover password hashing, token handling, configuration validation, duplicat
 Known gaps include:
 
 * Authentication endpoints do not have rate limiting or brute-force protection.
-* Security-sensitive actions are not recorded in an audit log.
+* Secret lifecycle actions are recorded in an audit log, but authentication attempts are not.
 * Encryption key rotation and recovery procedures are not implemented.
 * Production deployment hardening, including TLS termination, operational monitoring, backup and restore validation, and deployment-specific secret management, has not been established by this repository.
 
-These are follow-up engineering requirements, not implemented features. They should be addressed and tested before considering a real deployment with sensitive data.
+The audit log records action names, user IDs, secret IDs, and timestamps. It does not store secret values. These remaining gaps should be addressed and tested before considering a real deployment with sensitive data.
 
 ## Project structure
 
