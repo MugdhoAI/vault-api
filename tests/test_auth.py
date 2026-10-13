@@ -67,3 +67,28 @@ def test_auth_endpoints_are_rate_limited() -> None:
 
         limited = client.post("/auth/token", json=payload)
         assert limited.status_code == 429
+
+def test_login_verifies_dummy_hash_for_unknown_account(monkeypatch) -> None:
+    from app import main
+
+    checked_hashes: list[str] = []
+
+    def record_verification(password: str, hashed: str) -> bool:
+        checked_hashes.append(hashed)
+        return False
+
+    monkeypatch.setattr(main, "verify_password", record_verification)
+
+    with TestClient(app, client=("198.51.100.18", 50000)) as client:
+        response = client.post(
+            "/auth/token",
+            json={
+                "email": f"missing-{uuid4()}@example.com",
+                "password": "incorrect-password",
+            },
+        )
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Invalid credentials"
+    assert checked_hashes == [main.DUMMY_PASSWORD_HASH]
+
