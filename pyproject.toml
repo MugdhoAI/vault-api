@@ -1,7 +1,7 @@
 [project]
 name = "vault-api"
 version = "0.1.0"
-description = "A REST API for encrypted secret storage, built with FastAPI and PostgreSQL."
+description = "A FastAPI REST API for authenticated secret storage with PostgreSQL, Argon2, JWT, and Fernet encryption."
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.116,<1.0",
