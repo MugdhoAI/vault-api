@@ -11,6 +11,7 @@ from slowapi.util import get_remote_address
 from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.concurrency import run_in_threadpool
 
 from app.config import get_settings
 from app.crypto import decrypt_value, encrypt_value
@@ -60,7 +61,8 @@ async def register(request: Request, data: UserCreate, session: Session) -> Toke
     if existing:
         raise HTTPException(status_code=409, detail="Email is already registered")
 
-    user = User(email=data.email, password_hash=hash_password(data.password))
+    password_hash = await run_in_threadpool(hash_password, data.password)
+    user = User(email=data.email, password_hash=password_hash)
     session.add(user)
     try:
         await session.commit()
@@ -76,7 +78,11 @@ async def register(request: Request, data: UserCreate, session: Session) -> Toke
 async def login(request: Request, data: UserCreate, session: Session) -> Token:
     user = await session.scalar(select(User).where(User.email == data.email))
     password_hash_to_check = user.password_hash if user else DUMMY_PASSWORD_HASH
-    password_matches = verify_password(data.password, password_hash_to_check)
+    password_matches = await run_in_threadpool(
+        verify_password,
+        data.password,
+        password_hash_to_check,
+    )
     if user is None or not password_matches:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     return Token(access_token=create_access_token(user.email))
