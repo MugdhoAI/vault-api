@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import get_settings
 from app.crypto import decrypt_value, encrypt_value
 from app.db import engine, get_session
-from app.models import Secret, User
+from app.models import AuditEvent, Secret, User
 from app.schemas import SecretCreate, SecretRead, SecretUpdate, Token, UserCreate
 from app.security import create_access_token, decode_subject, hash_password, verify_password
 
@@ -82,6 +82,15 @@ async def current_user(
     return user
 
 
+def record_audit_event(
+    session: AsyncSession,
+    user_id: int,
+    action: str,
+    secret_id: int | None = None,
+) -> None:
+    session.add(AuditEvent(user_id=user_id, action=action, secret_id=secret_id))
+
+
 def present_secret(secret: Secret) -> SecretRead:
     try:
         value = decrypt_value(secret.value)
@@ -101,6 +110,8 @@ def present_secret(secret: Secret) -> SecretRead:
 async def create_secret(data: SecretCreate, user: Annotated[User, Depends(current_user)], session: Session) -> SecretRead:
     secret = Secret(owner_id=user.id, name=data.name, value=encrypt_value(data.value))
     session.add(secret)
+    await session.flush()
+    record_audit_event(session, user.id, "secret.create", secret.id)
     await session.commit()
     await session.refresh(secret)
     return present_secret(secret)
@@ -109,7 +120,10 @@ async def create_secret(data: SecretCreate, user: Annotated[User, Depends(curren
 @app.get("/secrets", response_model=list[SecretRead])
 async def list_secrets(user: Annotated[User, Depends(current_user)], session: Session) -> list[SecretRead]:
     result = await session.scalars(select(Secret).where(Secret.owner_id == user.id).order_by(Secret.id))
-    return [present_secret(secret) for secret in result]
+    secrets = [present_secret(secret) for secret in result]
+    record_audit_event(session, user.id, "secret.list")
+    await session.commit()
+    return secrets
 
 
 @app.get("/secrets/{secret_id}", response_model=SecretRead)
@@ -117,6 +131,8 @@ async def get_secret(secret_id: int, user: Annotated[User, Depends(current_user)
     secret = await session.scalar(select(Secret).where(Secret.id == secret_id, Secret.owner_id == user.id))
     if not secret:
         raise HTTPException(status_code=404, detail="Secret not found")
+    record_audit_event(session, user.id, "secret.read", secret.id)
+    await session.commit()
     return present_secret(secret)
 
 
@@ -129,6 +145,7 @@ async def update_secret(secret_id: int, data: SecretUpdate, user: Annotated[User
         secret.name = data.name
     if data.value is not None:
         secret.value = encrypt_value(data.value)
+    record_audit_event(session, user.id, "secret.update", secret.id)
     await session.commit()
     await session.refresh(secret)
     return present_secret(secret)
@@ -139,5 +156,6 @@ async def delete_secret(secret_id: int, user: Annotated[User, Depends(current_us
     secret = await session.scalar(select(Secret).where(Secret.id == secret_id, Secret.owner_id == user.id))
     if not secret:
         raise HTTPException(status_code=404, detail="Secret not found")
+    record_audit_event(session, user.id, "secret.delete", secret.id)
     await session.delete(secret)
     await session.commit()
