@@ -1,3 +1,4 @@
+import pytest
 from cryptography.fernet import Fernet
 
 from app import crypto
@@ -22,3 +23,16 @@ def test_previous_key_can_decrypt_and_new_key_encrypts(monkeypatch) -> None:
 
     new_ciphertext = crypto.encrypt_value("rotated-secret")
     assert Fernet(new_key.encode()).decrypt(new_ciphertext.encode()) == b"rotated-secret"
+
+def test_invalid_ciphertext_fails_without_exposing_ciphertext(monkeypatch) -> None:
+    key = Fernet.generate_key().decode()
+    monkeypatch.setattr(
+        crypto,
+        "get_settings",
+        lambda: Settings(encryption_key=key),
+    )
+
+    with pytest.raises(ValueError, match="Stored secret cannot be decrypted") as error:
+        crypto.decrypt_value("not-a-fernet-token")
+
+    assert "not-a-fernet-token" not in str(error.value)
