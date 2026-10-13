@@ -145,7 +145,7 @@ Generate a Fernet encryption key:
 python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 ```
 
-Keep `.env` private and do not commit real credentials. Production secrets must be supplied by your deployment's secret management mechanism, not copied from the example or Docker Compose file.
+Keep `.env` private and do not commit real credentials. Production secrets must be supplied by your deployment's secret management mechanism, not copied from the example or Docker Compose file. In production, configure `DATABASE_URL` with PostgreSQL TLS enabled, for example by adding `?ssl=require` to the connection URL. The application rejects production database URLs that do not specify TLS.
 
 ## Run locally
 
