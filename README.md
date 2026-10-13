@@ -1,6 +1,6 @@
 # Vault API
 
-A FastAPI REST API for authenticated secret storage, using PostgreSQL, Argon2 password hashing, JWT authentication, and Fernet encryption.
+A FastAPI REST API for authenticated secret storage with PostgreSQL, Argon2, JWT, and Fernet encryption.
 
 This project demonstrates backend engineering fundamentals through an asynchronous API, owner-scoped data access, request validation, integration tests, Docker based development, and continuous integration.
 
@@ -43,6 +43,55 @@ This project demonstrates backend engineering fundamentals through an asynchrono
 
 FastAPI exposes interactive API documentation at `/docs` while the application is running.
 
+### Example workflow
+
+The examples below assume the API is running at `http://localhost:8000` and that `curl` and Python are installed. Use a test account and non-sensitive values.
+
+Register a user and save the returned access token:
+
+```bash
+TOKEN=$(curl --fail-with-body --silent --show-error \
+  -X POST http://localhost:8000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"demo@example.com","password":"change-this-demo-password"}' \
+  | python -c 'import json, sys; print(json.load(sys.stdin)["access_token"])')
+```
+
+If the account already exists, obtain a token through the login endpoint instead:
+
+```bash
+TOKEN=$(curl --fail-with-body --silent --show-error \
+  -X POST http://localhost:8000/auth/token \
+  -H "Content-Type: application/json" \
+  -d '{"email":"demo@example.com","password":"change-this-demo-password"}' \
+  | python -c 'import json, sys; print(json.load(sys.stdin)["access_token"])')
+```
+
+Create a secret. The response contains its numeric `id` and the decrypted value for the authenticated owner:
+
+```bash
+SECRET_ID=$(curl --fail-with-body --silent --show-error \
+  -X POST http://localhost:8000/secrets \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"demo","value":"not-a-real-secret"}' \
+  | python -c 'import json, sys; print(json.load(sys.stdin)["id"])')
+```
+
+Retrieve the secret and list the current user's secrets:
+
+```bash
+curl --fail-with-body --silent --show-error \
+  http://localhost:8000/secrets/$SECRET_ID \
+  -H "Authorization: Bearer $TOKEN"
+
+curl --fail-with-body --silent --show-error \
+  http://localhost:8000/secrets \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+These commands create persistent test data in the configured database. Use a disposable local database when experimenting.
+
 ## Security model
 
 Passwords are hashed with Argon2 rather than stored as plain text. Secret values are encrypted before they are persisted to PostgreSQL. The application scopes secret queries to the authenticated user's ID, and does not grant access to another user's records just because a valid token is supplied.
@@ -65,6 +114,39 @@ The encryption key is required to decrypt stored values. Losing all keys that ca
 
 Do not remove the previous key before the rotation command completes successfully. Keep the backup until verification is complete.
 
+## Configuration
+
+The application reads configuration from environment variables and, for local development, a `.env` file. Start with [`.env.example`](.env.example). It lists the required settings:
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection string using the async SQLAlchemy driver |
+| `JWT_SECRET` | Secret used to sign access tokens |
+| `ENCRYPTION_KEY` | Current Fernet key used for new encryption |
+| `ENCRYPTION_KEY_PREVIOUS` | Optional comma separated previous Fernet keys accepted during key rotation |
+| `RATE_LIMIT_STORAGE_URI` | Rate limit storage. Use `memory://` locally and Redis in production |
+| `ENVIRONMENT` | Set to `development` locally or `production` to enable production secret validation |
+
+For a local non-Docker run, copy the example file and replace the placeholder values:
+
+```bash
+cp .env.example .env
+```
+
+Generate a JWT signing secret with Python:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
+
+Generate a Fernet encryption key:
+
+```bash
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+```
+
+Keep `.env` private and do not commit real credentials. Production secrets must be supplied by your deployment's secret management mechanism, not copied from the example or Docker Compose file.
+
 ## Run locally
 
 Create a virtual environment and install the development dependencies:
@@ -80,7 +162,7 @@ Start PostgreSQL and the API with Docker:
 docker compose up --build
 ```
 
-The API will be available at `http://localhost:8000`. Open `http://localhost:8000/docs` for the interactive API documentation.
+The API will be available at `http://localhost:8000`. Open `http://localhost:8000/docs` for the interactive API documentation. Docker Compose provides its own local development environment variables; it does not use values from `.env.example`.
 
 For a non-Docker setup, PostgreSQL must be running separately. Copy `.env.example` to `.env`, configure the connection string and generated secrets, then apply the database migrations before starting the API:
 
@@ -93,22 +175,13 @@ New Docker containers apply migrations before the API starts. The application no
 
 If you have a database created by an older version that used automatic table creation, back it up first. Do not run the initial migration against tables that already exist. After confirming that the existing schema exactly matches the initial migration, mark it as migrated with `alembic stamp head`; otherwise, create a fresh database and migrate it.
 
-Generate a Fernet key with:
-
-```python
-from cryptography.fernet import Fernet
-print(Fernet.generate_key().decode())
-```
-
 ## Testing
 
-Run the test suite against a dedicated PostgreSQL test database:
+Run the test suite:
 
 ```bash
 pytest
 ```
-
-The test session applies pending Alembic migrations before running integration tests. Do not point the test suite at a database containing data you need to preserve.
 
 Run static checks with Ruff:
 
@@ -125,11 +198,12 @@ Tests cover password hashing, token handling, configuration validation, duplicat
 Known gaps include:
 
 * Authentication endpoints are rate limited. Production requires a Redis backed store; authentication attempts are not recorded in the audit log.
-* Secret lifecycle actions are recorded in an audit log, but authentication attempts are not.
 * Key rotation is an operator run procedure. Automated key recovery and external key management are not provided.
 * Production deployment hardening, including TLS termination, operational monitoring, backup and restore validation, and deployment-specific secret management, has not been established by this repository.
 
-The audit log records action names, user IDs, secret IDs, and timestamps. It does not store secret values. Local development uses an in-memory rate limit store, which is not shared across workers or instances. Configure Redis for production and test the deployment's proxy and client IP handling before relying on the limit. These remaining gaps should be addressed and tested before considering a real deployment with sensitive data.
+The audit log records action names, user IDs, secret IDs, and timestamps. It does not store secret values. Local development uses an in-memory rate limit store, which is not shared across workers or instances. Configure Redis for production and test the deployment's proxy and client IP handling before relying on the limit.
+
+These remaining gaps should be addressed and tested before considering a real deployment with sensitive data.
 
 ## Project structure
 
@@ -152,8 +226,6 @@ tests/
   test_secrets.py
 
 Dockerfile
-alembic.ini
-migrations/
 docker-compose.yml
 pyproject.toml
 ```
