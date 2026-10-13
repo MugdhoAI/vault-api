@@ -7,9 +7,3 @@ def pytest_sessionstart(session) -> None:
     config = Config("alembic.ini")
     command.upgrade(config, "head")
 
-
-def pytest_runtest_setup(item) -> None:
-    """Keep rate limit counters isolated between tests."""
-    from app.main import limiter
-
-    limiter._storage.reset()
