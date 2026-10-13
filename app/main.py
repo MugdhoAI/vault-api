@@ -131,9 +131,10 @@ async def get_secret(secret_id: int, user: Annotated[User, Depends(current_user)
     secret = await session.scalar(select(Secret).where(Secret.id == secret_id, Secret.owner_id == user.id))
     if not secret:
         raise HTTPException(status_code=404, detail="Secret not found")
+    response = present_secret(secret)
     record_audit_event(session, user.id, "secret.read", secret.id)
     await session.commit()
-    return present_secret(secret)
+    return response
 
 
 @app.patch("/secrets/{secret_id}", response_model=SecretRead)
