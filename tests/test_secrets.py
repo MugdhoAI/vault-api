@@ -1,9 +1,8 @@
 import asyncio
 from uuid import uuid4
 
-from sqlalchemy import select
-
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from app.db import session_factory
 from app.main import app
