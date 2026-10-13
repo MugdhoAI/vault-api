@@ -36,6 +36,8 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 bearer_scheme = HTTPBearer(auto_error=False)
 Session = Annotated[AsyncSession, Depends(get_session)]
+# Keep the password verification cost similar for unknown and existing accounts.
+DUMMY_PASSWORD_HASH = hash_password("vault-api-dummy-password-not-for-login")
 
 
 @app.get("/health")
@@ -73,7 +75,9 @@ async def register(request: Request, data: UserCreate, session: Session) -> Toke
 @limiter.limit(settings.auth_rate_limit)
 async def login(request: Request, data: UserCreate, session: Session) -> Token:
     user = await session.scalar(select(User).where(User.email == data.email))
-    if not user or not verify_password(data.password, user.password_hash):
+    password_hash_to_check = user.password_hash if user else DUMMY_PASSWORD_HASH
+    password_matches = verify_password(data.password, password_hash_to_check)
+    if user is None or not password_matches:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     return Token(access_token=create_access_token(user.email))
 
