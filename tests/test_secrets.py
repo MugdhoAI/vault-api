@@ -27,7 +27,7 @@ def test_secret_lifecycle_and_user_isolation() -> None:
     owner_email = f"owner-{uuid4()}@example.com"
     other_email = f"other-{uuid4()}@example.com"
 
-    with TestClient(app) as client:
+    with TestClient(app, client=("198.51.100.21", 50000)) as client:
         owner_token = register(client, owner_email, password)
         other_token = register(client, other_email, password)
         owner_headers = auth_header(owner_token)
@@ -103,7 +103,7 @@ def test_secret_lifecycle_is_audited_without_secret_values() -> None:
     email = f"audit-{uuid4()}@example.com"
     password = "correct horse battery staple"
 
-    with TestClient(app) as client:
+    with TestClient(app, client=("198.51.100.22", 50000)) as client:
         token = register(client, email, password)
         headers = auth_header(token)
         created = client.post(
