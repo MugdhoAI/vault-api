@@ -1,6 +1,7 @@
 from datetime import UTC, datetime, timedelta
 
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
 
 from app.config import get_settings
@@ -28,5 +29,5 @@ def decode_subject(token: str) -> str | None:
         payload = jwt.decode(token, get_settings().jwt_secret, algorithms=["HS256"])
         subject = payload.get("sub")
         return subject if isinstance(subject, str) else None
-    except JWTError:
+    except InvalidTokenError:
         return None
