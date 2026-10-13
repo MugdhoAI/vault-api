@@ -15,9 +15,10 @@ def test_access_token_round_trip() -> None:
 
 def test_tampered_access_token_is_rejected() -> None:
     token = create_access_token("user@example.com")
-    replacement = "A" if token[-1] != "A" else "B"
+    header, payload, signature = token.split(".")
+    replacement = "A" if signature[0] != "A" else "B"
 
-    assert decode_subject(token[:-1] + replacement) is None
+    assert decode_subject(f"{header}.{payload}.{replacement}{signature[1:]}") is None
 
 
 def test_expired_access_token_is_rejected(monkeypatch) -> None:
