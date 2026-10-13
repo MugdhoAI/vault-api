@@ -70,11 +70,16 @@ docker compose up --build
 
 The API will be available at `http://localhost:8000`. Open `http://localhost:8000/docs` for the interactive API documentation.
 
-For a non-Docker setup, copy `.env.example` to `.env`, provide a PostgreSQL connection string and a generated Fernet key, then run:
+For a non-Docker setup, PostgreSQL must be running separately. Copy `.env.example` to `.env`, configure the connection string and generated secrets, then apply the database migrations before starting the API:
 
 ```bash
+alembic upgrade head
 uvicorn app.main:app --reload
 ```
+
+New Docker containers apply migrations before the API starts. The application no longer creates tables automatically at startup.
+
+If you have a database created by an older version that used automatic table creation, back it up first. Do not run the initial migration against tables that already exist. After confirming that the existing schema exactly matches the initial migration, mark it as migrated with `alembic stamp head`; otherwise, create a fresh database and migrate it.
 
 Generate a Fernet key with:
 
@@ -85,11 +90,13 @@ print(Fernet.generate_key().decode())
 
 ## Testing
 
-Run the test suite:
+Run the test suite against a dedicated PostgreSQL test database:
 
 ```bash
 pytest
 ```
+
+The test session applies pending Alembic migrations before running integration tests. Do not point the test suite at a database containing data you need to preserve.
 
 Run static checks with Ruff:
 
@@ -105,7 +112,6 @@ Tests cover password hashing, token handling, configuration validation, duplicat
 
 Known gaps include:
 
-* Database tables are created at application startup. There is no versioned migration workflow yet.
 * Authentication endpoints do not have rate limiting or brute-force protection.
 * Security-sensitive actions are not recorded in an audit log.
 * Encryption key rotation and recovery procedures are not implemented.
@@ -134,6 +140,8 @@ tests/
   test_secrets.py
 
 Dockerfile
+alembic.ini
+migrations/
 docker-compose.yml
 pyproject.toml
 ```
