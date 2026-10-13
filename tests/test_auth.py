@@ -44,3 +44,13 @@ def test_secret_endpoints_reject_missing_or_invalid_tokens() -> None:
 
     assert missing_token.status_code == 401
     assert invalid_token.status_code == 401
+
+
+def test_openapi_documents_bearer_authentication() -> None:
+    from app.main import app
+
+    schema = app.openapi()
+    security_schemes = schema["components"]["securitySchemes"]
+
+    assert security_schemes["HTTPBearer"]["type"] == "http"
+    assert security_schemes["HTTPBearer"]["scheme"] == "bearer"
