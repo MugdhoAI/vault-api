@@ -63,6 +63,7 @@ def test_production_requires_redis_for_rate_limits() -> None:
             encryption_key=Fernet.generate_key().decode(),
         )
 
+
 def test_production_rejects_default_database_credentials() -> None:
     with pytest.raises(ValidationError, match="local development credentials"):
         Settings(
