@@ -34,6 +34,10 @@ jobs:
         run: pip install -e ".[dev]"
       - name: Lint
         run: ruff check .
+      - name: Validate Docker image
+        run: docker build -t vault-api:test .
+      - name: Validate Compose configuration
+        run: docker compose config --quiet
       - name: Run tests
         run: pytest
         env:
