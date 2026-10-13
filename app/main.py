@@ -2,11 +2,15 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi.util import get_remote_address
 
 from app.config import get_settings
 from app.crypto import decrypt_value, encrypt_value
@@ -24,7 +28,12 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         await engine.dispose()
 
 
-app = FastAPI(title=get_settings().app_name, version="0.1.0", lifespan=lifespan)
+settings = get_settings()
+limiter = Limiter(key_func=get_remote_address, storage_uri=settings.rate_limit_storage_uri)
+app = FastAPI(title=settings.app_name, version="0.1.0", lifespan=lifespan)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 bearer_scheme = HTTPBearer(auto_error=False)
 Session = Annotated[AsyncSession, Depends(get_session)]
 
@@ -43,7 +52,8 @@ async def health() -> dict[str, str]:
 
 
 @app.post("/auth/register", response_model=Token, status_code=status.HTTP_201_CREATED)
-async def register(data: UserCreate, session: Session) -> Token:
+@limiter.limit(settings.auth_rate_limit)
+async def register(request: Request, data: UserCreate, session: Session) -> Token:
     existing = await session.scalar(select(User).where(User.email == data.email))
     if existing:
         raise HTTPException(status_code=409, detail="Email is already registered")
@@ -60,7 +70,8 @@ async def register(data: UserCreate, session: Session) -> Token:
 
 
 @app.post("/auth/token", response_model=Token)
-async def login(data: UserCreate, session: Session) -> Token:
+@limiter.limit(settings.auth_rate_limit)
+async def login(request: Request, data: UserCreate, session: Session) -> Token:
     user = await session.scalar(select(User).where(User.email == data.email))
     if not user or not verify_password(data.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
