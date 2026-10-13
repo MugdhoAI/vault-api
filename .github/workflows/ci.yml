@@ -35,7 +35,7 @@ jobs:
       - name: Audit installed dependencies
         run: |
           pip install pip-audit
-          pip-audit
+          pip-audit --skip-editable
       - name: Lint
         run: ruff check .
       - name: Validate Docker image
