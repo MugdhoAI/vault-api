@@ -53,6 +53,9 @@ class Settings(BaseSettings):
             raise ValueError("Production DATABASE_URL must include database credentials")
         if database.username == "vault" and database.password == "vault":
             raise ValueError("Production DATABASE_URL must not use the local development credentials")
+        ssl_mode = str(database.query.get("ssl", "")).lower()
+        if ssl_mode not in {"require", "verify-ca", "verify-full"}:
+            raise ValueError("Production DATABASE_URL must enable PostgreSQL TLS with ssl=require or stronger")
 
         rate_limit_url = urlsplit(self.rate_limit_storage_uri)
         if rate_limit_url.scheme not in {"redis", "rediss"} or not rate_limit_url.hostname:
