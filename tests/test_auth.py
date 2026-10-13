@@ -9,7 +9,7 @@ def test_duplicate_registration_returns_conflict() -> None:
     email = f"user-{uuid4()}@example.com"
     payload = {"email": email, "password": "correct horse battery staple"}
 
-    with TestClient(app) as client:
+    with TestClient(app, client=("198.51.100.11", 50000)) as client:
         first = client.post("/auth/register", json=payload)
         duplicate = client.post("/auth/register", json=payload)
 
@@ -22,7 +22,7 @@ def test_login_rejects_invalid_password() -> None:
     email = f"user-{uuid4()}@example.com"
     payload = {"email": email, "password": "correct horse battery staple"}
 
-    with TestClient(app) as client:
+    with TestClient(app, client=("198.51.100.12", 50000)) as client:
         registered = client.post("/auth/register", json=payload)
         invalid_login = client.post(
             "/auth/token",
@@ -35,7 +35,7 @@ def test_login_rejects_invalid_password() -> None:
 
 
 def test_secret_endpoints_reject_missing_or_invalid_tokens() -> None:
-    with TestClient(app) as client:
+    with TestClient(app, client=("198.51.100.13", 50000)) as client:
         missing_token = client.get("/secrets")
         invalid_token = client.get(
             "/secrets",
@@ -44,3 +44,26 @@ def test_secret_endpoints_reject_missing_or_invalid_tokens() -> None:
 
     assert missing_token.status_code == 401
     assert invalid_token.status_code == 401
+
+
+def test_openapi_documents_bearer_authentication() -> None:
+    from app.main import app
+
+    schema = app.openapi()
+    security_schemes = schema["components"]["securitySchemes"]
+
+    assert security_schemes["HTTPBearer"]["type"] == "http"
+    assert security_schemes["HTTPBearer"]["scheme"] == "bearer"
+
+
+def test_auth_endpoints_are_rate_limited() -> None:
+    email = f"rate-limit-{uuid4()}@example.com"
+    payload = {"email": email, "password": "incorrect-password"}
+
+    with TestClient(app, client=("198.51.100.17", 50000)) as client:
+        for _ in range(5):
+            response = client.post("/auth/token", json=payload)
+            assert response.status_code == 401
+
+        limited = client.post("/auth/token", json=payload)
+        assert limited.status_code == 429

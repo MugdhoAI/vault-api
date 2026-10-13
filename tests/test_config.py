@@ -28,6 +28,7 @@ def test_production_accepts_configured_secrets() -> None:
         environment="production",
         jwt_secret="a-unique-production-secret-that-is-long-enough",
         encryption_key=Fernet.generate_key().decode(),
+        rate_limit_storage_uri="redis://localhost:6379/0",
     )
 
     assert settings.environment == "production"
@@ -45,3 +46,17 @@ def test_production_rejects_short_jwt_secret() -> None:
 def test_access_token_lifetime_must_be_positive() -> None:
     with pytest.raises(ValidationError, match="access_token_minutes"):
         Settings(access_token_minutes=0)
+
+
+def test_previous_encryption_keys_must_be_valid_fernet_keys() -> None:
+    with pytest.raises(ValidationError, match="ENCRYPTION_KEY_PREVIOUS"):
+        Settings(encryption_key_previous="not-a-fernet-key")
+
+
+def test_production_requires_redis_for_rate_limits() -> None:
+    with pytest.raises(ValidationError, match="RATE_LIMIT_STORAGE_URI"):
+        Settings(
+            environment="production",
+            jwt_secret="a-unique-production-secret-that-is-long-enough",
+            encryption_key=Fernet.generate_key().decode(),
+        )
