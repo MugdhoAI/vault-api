@@ -54,3 +54,20 @@ def test_openapi_documents_bearer_authentication() -> None:
 
     assert security_schemes["HTTPBearer"]["type"] == "http"
     assert security_schemes["HTTPBearer"]["scheme"] == "bearer"
+
+
+def test_auth_endpoints_are_rate_limited() -> None:
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+
+    email = f"rate-limit-{uuid4()}@example.com"
+    payload = {"email": email, "password": "incorrect-password"}
+
+    with TestClient(app, client=("198.51.100.17", 50000)) as client:
+        for _ in range(5):
+            response = client.post("/auth/token", json=payload)
+            assert response.status_code == 401
+
+        limited = client.post("/auth/token", json=payload)
+        assert limited.status_code == 429
