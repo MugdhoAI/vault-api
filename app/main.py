@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,7 +27,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(title=get_settings().app_name, version="0.1.0", lifespan=lifespan)
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
+bearer_scheme = HTTPBearer(auto_error=False)
 Session = Annotated[AsyncSession, Depends(get_session)]
 
 
@@ -69,8 +69,13 @@ async def login(data: UserCreate, session: Session) -> Token:
     return Token(access_token=create_access_token(user.email))
 
 
-async def current_user(token: Annotated[str, Depends(oauth2_scheme)], session: Session) -> User:
-    email = decode_subject(token)
+async def current_user(
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
+    session: Session,
+) -> User:
+    if credentials is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    email = decode_subject(credentials.credentials)
     if not email:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
     user = await session.scalar(select(User).where(User.email == email))
