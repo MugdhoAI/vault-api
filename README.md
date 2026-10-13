@@ -173,7 +173,7 @@ uvicorn app.main:app --reload
 
 New Docker containers apply migrations before the API starts. The application no longer creates tables automatically at startup.
 
-If you have a database created by an older version that used automatic table creation, back it up first. Do not run the initial migration against tables that already exist. After confirming that the existing schema exactly matches the initial migration, mark it as migrated with `alembic stamp head`; otherwise, create a fresh database and migrate it.
+If you have a database created by an older version that used automatic table creation, back it up first. Do not run the initial migration against tables that already exist. After confirming that the existing `users` and `secrets` tables exactly match the initial migration, mark that baseline with `alembic stamp 0001_initial_schema`, then run `alembic upgrade head` to create the audit table. Do not stamp `head` directly on the old schema because that would skip the audit table migration. If the schema differs, create a fresh database and migrate it, or prepare a reviewed data migration first.
 
 ## Testing
 
