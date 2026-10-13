@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.crypto import decrypt_value, encrypt_value
-from app.db import Base, engine, get_session
+from app.db import engine, get_session
 from app.models import Secret, User
 from app.schemas import SecretCreate, SecretRead, SecretUpdate, Token, UserCreate
 from app.security import create_access_token, decode_subject, hash_password, verify_password
@@ -18,8 +18,6 @@ from app.security import create_access_token, decode_subject, hash_password, ver
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    async with engine.begin() as connection:
-        await connection.run_sync(Base.metadata.create_all)
     try:
         yield
     finally:
