@@ -27,15 +27,14 @@ async def rotate_encryption_key() -> int:
         raise RuntimeError("The new ENCRYPTION_KEY must differ from previous keys")
 
     rotated = 0
-    async with session_factory() as session:
-        async with session.begin():
-            secrets = await session.scalars(
-                select(Secret).order_by(Secret.id).with_for_update()
-            )
-            for secret in secrets:
-                plaintext = decrypt_value(secret.value)
-                secret.value = encrypt_value(plaintext)
-                rotated += 1
+    async with session_factory() as session, session.begin():
+        secrets = await session.scalars(
+            select(Secret).order_by(Secret.id).with_for_update()
+        )
+        for secret in secrets:
+            plaintext = decrypt_value(secret.value)
+            secret.value = encrypt_value(plaintext)
+            rotated += 1
 
     return rotated
 
