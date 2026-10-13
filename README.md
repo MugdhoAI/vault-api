@@ -51,7 +51,17 @@ The API decrypts a secret when returning it to its authenticated owner. This is 
 
 The Docker Compose configuration contains credentials and an encryption key intended only for local development. Do not reuse these values in a deployed environment. Use unique secrets supplied through an appropriate secret manager or deployment configuration.
 
-The encryption key is required to decrypt stored values. Losing it can make those values unrecoverable. This version does not provide an encryption key rotation workflow.
+The encryption key is required to decrypt stored values. Losing all keys that can decrypt existing values can make those values unrecoverable. Back up the database and key material before rotating keys.
+
+### Rotate the encryption key
+
+1. Back up the database and securely preserve the current key.
+2. Generate a new Fernet key and set it as `ENCRYPTION_KEY`.
+3. Set `ENCRYPTION_KEY_PREVIOUS` to the old key. Multiple previous keys can be comma separated.
+4. In a maintenance window, run `python scripts/rotate_encryption_key.py` once. The command re-encrypts stored values in a transaction using the new primary key.
+5. Verify that stored values can be retrieved, then remove the old key from `ENCRYPTION_KEY_PREVIOUS` and restart the application.
+
+Do not remove the previous key before the rotation command completes successfully. Keep the backup until verification is complete.
 
 ## Run locally
 
