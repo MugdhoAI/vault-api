@@ -2,11 +2,10 @@ from functools import lru_cache
 from typing import Literal
 from urllib.parse import urlsplit
 
-from sqlalchemy.engine import make_url
-
 from cryptography.fernet import Fernet
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy.engine import make_url
 
 
 class Settings(BaseSettings):
