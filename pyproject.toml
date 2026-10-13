@@ -24,6 +24,10 @@ dev = [
     "ruff>=0.13,<1.0",
 ]
 
+[tool.setuptools.packages.find]
+include = ["app*"]
+exclude = ["tests*", "migrations*"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"
