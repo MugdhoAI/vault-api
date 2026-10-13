@@ -1,6 +1,6 @@
 # Vault API
 
-A FastAPI REST API for authenticated secret storage, using PostgreSQL, Argon2 password hashing, JWT authentication, and Fernet encryption.
+A FastAPI REST API for authenticated secret storage with PostgreSQL, Argon2, JWT, and Fernet encryption.
 
 This project demonstrates backend engineering fundamentals through an asynchronous API, owner-scoped data access, request validation, integration tests, Docker based development, and continuous integration.
 
@@ -43,6 +43,55 @@ This project demonstrates backend engineering fundamentals through an asynchrono
 
 FastAPI exposes interactive API documentation at `/docs` while the application is running.
 
+### Example workflow
+
+The examples below assume the API is running at `http://localhost:8000` and that `curl` and Python are installed. Use a test account and non-sensitive values.
+
+Register a user and save the returned access token:
+
+```bash
+TOKEN=$(curl --fail-with-body --silent --show-error \
+  -X POST http://localhost:8000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"demo@example.com","password":"change-this-demo-password"}' \
+  | python -c 'import json, sys; print(json.load(sys.stdin)["access_token"])')
+```
+
+If the account already exists, obtain a token through the login endpoint instead:
+
+```bash
+TOKEN=$(curl --fail-with-body --silent --show-error \
+  -X POST http://localhost:8000/auth/token \
+  -H "Content-Type: application/json" \
+  -d '{"email":"demo@example.com","password":"change-this-demo-password"}' \
+  | python -c 'import json, sys; print(json.load(sys.stdin)["access_token"])')
+```
+
+Create a secret. The response contains its numeric `id` and the decrypted value for the authenticated owner:
+
+```bash
+SECRET_ID=$(curl --fail-with-body --silent --show-error \
+  -X POST http://localhost:8000/secrets \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"demo","value":"not-a-real-secret"}' \
+  | python -c 'import json, sys; print(json.load(sys.stdin)["id"])')
+```
+
+Retrieve the secret and list the current user's secrets:
+
+```bash
+curl --fail-with-body --silent --show-error \
+  http://localhost:8000/secrets/$SECRET_ID \
+  -H "Authorization: Bearer $TOKEN"
+
+curl --fail-with-body --silent --show-error \
+  http://localhost:8000/secrets \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+These commands create persistent test data in the configured database. Use a disposable local database when experimenting.
+
 ## Security model
 
 Passwords are hashed with Argon2 rather than stored as plain text. Secret values are encrypted before they are persisted to PostgreSQL. The application scopes secret queries to the authenticated user's ID, and does not grant access to another user's records just because a valid token is supplied.
@@ -52,6 +101,37 @@ The API decrypts a secret when returning it to its authenticated owner. This is 
 The Docker Compose configuration contains credentials and an encryption key intended only for local development. Do not reuse these values in a deployed environment. Use unique secrets supplied through an appropriate secret manager or deployment configuration.
 
 The encryption key is required to decrypt stored values. Losing it can make those values unrecoverable. This version does not provide an encryption key rotation workflow.
+
+## Configuration
+
+The application reads configuration from environment variables and, for local development, a `.env` file. Start with [`.env.example`](.env.example). It lists the required settings:
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection string using the async SQLAlchemy driver |
+| `JWT_SECRET` | Secret used to sign access tokens |
+| `ENCRYPTION_KEY` | Fernet key used to encrypt and decrypt secret values |
+| `ENVIRONMENT` | Set to `development` locally or `production` to enable production secret validation |
+
+For a local non-Docker run, copy the example file and replace the placeholder values:
+
+```bash
+cp .env.example .env
+```
+
+Generate a JWT signing secret with Python:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
+
+Generate a Fernet encryption key:
+
+```bash
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+```
+
+Keep `.env` private and do not commit real credentials. Production secrets must be supplied by your deployment's secret management mechanism, not copied from the example or Docker Compose file.
 
 ## Run locally
 
@@ -68,19 +148,12 @@ Start PostgreSQL and the API with Docker:
 docker compose up --build
 ```
 
-The API will be available at `http://localhost:8000`. Open `http://localhost:8000/docs` for the interactive API documentation.
+The API will be available at `http://localhost:8000`. Open `http://localhost:8000/docs` for the interactive API documentation. Docker Compose provides its own local development environment variables; it does not use values from `.env.example`.
 
-For a non-Docker setup, copy `.env.example` to `.env`, provide a PostgreSQL connection string and a generated Fernet key, then run:
+For a non-Docker setup, PostgreSQL must be running separately. Configure `.env` with a reachable PostgreSQL connection string and generated secrets, then run:
 
 ```bash
 uvicorn app.main:app --reload
-```
-
-Generate a Fernet key with:
-
-```python
-from cryptography.fernet import Fernet
-print(Fernet.generate_key().decode())
 ```
 
 ## Testing
