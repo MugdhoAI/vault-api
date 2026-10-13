@@ -68,7 +68,7 @@ def test_production_rejects_default_database_credentials() -> None:
     with pytest.raises(ValidationError, match="local development credentials"):
         Settings(
             environment="production",
-            database_url="postgresql+asyncpg://vault:vault@localhost:5432/vault",
+            database_url="postgresql+asyncpg://vault:vault@localhost:5432/vault?ssl=require",
             jwt_secret="a-unique-production-secret-that-is-long-enough",
             encryption_key=Fernet.generate_key().decode(),
             rate_limit_storage_uri="redis://localhost:6379/0",
