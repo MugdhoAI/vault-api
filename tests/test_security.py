@@ -24,7 +24,7 @@ def test_tampered_access_token_is_rejected() -> None:
 def test_expired_access_token_is_rejected(monkeypatch) -> None:
     from datetime import UTC, datetime, timedelta
 
-    from jose import jwt
+    import jwt
 
     from app import security
     from app.config import Settings
