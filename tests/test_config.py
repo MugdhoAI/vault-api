@@ -90,3 +90,13 @@ def test_environment_rejects_unknown_values() -> None:
     with pytest.raises(ValidationError, match="environment"):
         Settings(environment="prod")
 
+def test_production_requires_database_tls() -> None:
+    with pytest.raises(ValidationError, match="must enable PostgreSQL TLS"):
+        Settings(
+            environment="production",
+            database_url="postgresql+asyncpg://vault_app:strong-password@db:5432/vault",
+            jwt_secret="a-unique-production-secret-that-is-long-enough",
+            encryption_key=Fernet.generate_key().decode(),
+            rate_limit_storage_uri="redis://localhost:6379/0",
+        )
+
