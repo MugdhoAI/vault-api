@@ -65,3 +65,30 @@ def test_secret_lifecycle_and_user_isolation() -> None:
 
         missing = client.get(f"/secrets/{secret_id}", headers=owner_headers)
         assert missing.status_code == 404
+
+
+
+def test_secret_decryption_failure_returns_safe_error() -> None:
+    from datetime import UTC, datetime
+
+    import pytest
+    from fastapi import HTTPException
+
+    from app.main import present_secret
+    from app.models import Secret
+
+    secret = Secret(
+        id=1,
+        owner_id=1,
+        name="example",
+        value="not-a-valid-fernet-token",
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
+    )
+
+    with pytest.raises(HTTPException) as error:
+        present_secret(secret)
+
+    assert error.value.status_code == 500
+    assert error.value.detail == "Stored secret could not be decrypted"
+    assert "not-a-valid-fernet-token" not in str(error.value.detail)
