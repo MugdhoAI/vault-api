@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     encryption_key: str = ""
     encryption_key_previous: str = ""
     access_token_minutes: int = Field(default=30, gt=0)
+    rate_limit_storage_uri: str = "memory://"
+    auth_rate_limit: str = "5/minute"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
@@ -42,6 +44,9 @@ class Settings(BaseSettings):
 
         if self.encryption_key in previous_keys:
             raise ValueError("ENCRYPTION_KEY must not also appear in ENCRYPTION_KEY_PREVIOUS")
+
+        if not self.rate_limit_storage_uri.startswith(("redis://", "rediss://")):
+            raise ValueError("Production RATE_LIMIT_STORAGE_URI must use Redis")
 
         return self
 
