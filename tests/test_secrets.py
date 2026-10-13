@@ -142,4 +142,5 @@ def test_secret_lifecycle_is_audited_without_secret_values() -> None:
         "secret.update",
         "secret.delete",
     ]
-    assert all(secret_id != "must-not-be-in-audit-log" for _, secret_id in events)
+    assert "value" not in AuditEvent.__table__.columns
+    assert "must-not-be-in-audit-log" not in str(events)
