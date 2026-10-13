@@ -1,13 +1,16 @@
 from functools import lru_cache
+from typing import Literal
+from urllib.parse import urlsplit
 
 from cryptography.fernet import Fernet
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy.engine import make_url
 
 
 class Settings(BaseSettings):
     app_name: str = "Vault API"
-    environment: str = "development"
+    environment: Literal["development", "test", "production"] = "development"
     database_url: str = "postgresql+asyncpg://vault:vault@localhost:5432/vault"
     jwt_secret: str = "change-this-in-production"
     encryption_key: str = ""
@@ -45,8 +48,15 @@ class Settings(BaseSettings):
         if self.encryption_key in previous_keys:
             raise ValueError("ENCRYPTION_KEY must not also appear in ENCRYPTION_KEY_PREVIOUS")
 
-        if not self.rate_limit_storage_uri.startswith(("redis://", "rediss://")):
-            raise ValueError("Production RATE_LIMIT_STORAGE_URI must use Redis")
+        database = make_url(self.database_url)
+        if not database.username or not database.password:
+            raise ValueError("Production DATABASE_URL must include database credentials")
+        if database.username == "vault" and database.password == "vault":
+            raise ValueError("Production DATABASE_URL must not use the local development credentials")
+
+        rate_limit_url = urlsplit(self.rate_limit_storage_uri)
+        if rate_limit_url.scheme not in {"redis", "rediss"} or not rate_limit_url.hostname:
+            raise ValueError("Production RATE_LIMIT_STORAGE_URI must be a valid Redis URL with a host")
 
         return self
 

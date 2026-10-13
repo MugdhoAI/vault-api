@@ -26,6 +26,7 @@ def test_production_requires_a_valid_fernet_key() -> None:
 def test_production_accepts_configured_secrets() -> None:
     settings = Settings(
         environment="production",
+        database_url="postgresql+asyncpg://vault_app:strong-password@db:5432/vault",
         jwt_secret="a-unique-production-secret-that-is-long-enough",
         encryption_key=Fernet.generate_key().decode(),
         rate_limit_storage_uri="redis://localhost:6379/0",
@@ -57,6 +58,35 @@ def test_production_requires_redis_for_rate_limits() -> None:
     with pytest.raises(ValidationError, match="RATE_LIMIT_STORAGE_URI"):
         Settings(
             environment="production",
+            database_url="postgresql+asyncpg://vault_app:strong-password@db:5432/vault",
             jwt_secret="a-unique-production-secret-that-is-long-enough",
             encryption_key=Fernet.generate_key().decode(),
         )
+
+
+def test_production_rejects_default_database_credentials() -> None:
+    with pytest.raises(ValidationError, match="local development credentials"):
+        Settings(
+            environment="production",
+            database_url="postgresql+asyncpg://vault:vault@localhost:5432/vault",
+            jwt_secret="a-unique-production-secret-that-is-long-enough",
+            encryption_key=Fernet.generate_key().decode(),
+            rate_limit_storage_uri="redis://localhost:6379/0",
+        )
+
+
+def test_production_rejects_redis_url_without_host() -> None:
+    with pytest.raises(ValidationError, match="valid Redis URL with a host"):
+        Settings(
+            environment="production",
+            database_url="postgresql+asyncpg://vault_app:strong-password@db:5432/vault",
+            jwt_secret="a-unique-production-secret-that-is-long-enough",
+            encryption_key=Fernet.generate_key().decode(),
+            rate_limit_storage_uri="redis://",
+        )
+
+
+def test_environment_rejects_unknown_values() -> None:
+    with pytest.raises(ValidationError, match="environment"):
+        Settings(environment="prod")
+
