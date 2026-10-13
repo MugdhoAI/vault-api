@@ -1,8 +1,13 @@
+import asyncio
 from uuid import uuid4
+
+from sqlalchemy import select
 
 from fastapi.testclient import TestClient
 
+from app.db import session_factory
 from app.main import app
+from app.models import AuditEvent, User
 
 
 def register(client: TestClient, email: str, password: str) -> str:
@@ -92,3 +97,49 @@ def test_secret_decryption_failure_returns_safe_error() -> None:
     assert error.value.status_code == 500
     assert error.value.detail == "Stored secret could not be decrypted"
     assert "not-a-valid-fernet-token" not in str(error.value.detail)
+
+
+
+def test_secret_lifecycle_is_audited_without_secret_values() -> None:
+    email = f"audit-{uuid4()}@example.com"
+    password = "correct horse battery staple"
+
+    with TestClient(app) as client:
+        token = register(client, email, password)
+        headers = auth_header(token)
+        created = client.post(
+            "/secrets",
+            headers=headers,
+            json={"name": "audit-demo", "value": "must-not-be-in-audit-log"},
+        )
+        assert created.status_code == 201
+        secret_id = created.json()["id"]
+
+        assert client.get("/secrets", headers=headers).status_code == 200
+        assert client.get(f"/secrets/{secret_id}", headers=headers).status_code == 200
+        assert client.patch(
+            f"/secrets/{secret_id}",
+            headers=headers,
+            json={"name": "audit-demo-updated"},
+        ).status_code == 200
+        assert client.delete(f"/secrets/{secret_id}", headers=headers).status_code == 204
+
+    async def read_audit_events() -> list[tuple[str, int | None]]:
+        async with session_factory() as session:
+            user_id = await session.scalar(select(User.id).where(User.email == email))
+            result = await session.execute(
+                select(AuditEvent.action, AuditEvent.secret_id)
+                .where(AuditEvent.user_id == user_id)
+                .order_by(AuditEvent.id)
+            )
+            return list(result.tuples())
+
+    events = asyncio.run(read_audit_events())
+    assert [action for action, _ in events] == [
+        "secret.create",
+        "secret.list",
+        "secret.read",
+        "secret.update",
+        "secret.delete",
+    ]
+    assert all(secret_id != "must-not-be-in-audit-log" for _, secret_id in events)
