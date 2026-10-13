@@ -124,12 +124,12 @@ Tests cover password hashing, token handling, configuration validation, duplicat
 
 Known gaps include:
 
-* Authentication endpoints do not have rate limiting or brute-force protection.
+* Authentication endpoints are rate limited. Production requires a Redis backed store; authentication attempts are not recorded in the audit log.
 * Secret lifecycle actions are recorded in an audit log, but authentication attempts are not.
 * Key rotation is an operator run procedure. Automated key recovery and external key management are not provided.
 * Production deployment hardening, including TLS termination, operational monitoring, backup and restore validation, and deployment-specific secret management, has not been established by this repository.
 
-The audit log records action names, user IDs, secret IDs, and timestamps. It does not store secret values. These remaining gaps should be addressed and tested before considering a real deployment with sensitive data.
+The audit log records action names, user IDs, secret IDs, and timestamps. It does not store secret values. Local development uses an in-memory rate limit store, which is not shared across workers or instances. Configure Redis for production and test the deployment's proxy and client IP handling before relying on the limit. These remaining gaps should be addressed and tested before considering a real deployment with sensitive data.
 
 ## Project structure
 
