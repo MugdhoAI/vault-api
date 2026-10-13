@@ -4,13 +4,13 @@ from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy import select, text
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
+from sqlalchemy import select, text
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.crypto import decrypt_value, encrypt_value
