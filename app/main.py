@@ -83,8 +83,16 @@ async def current_user(
 
 
 def present_secret(secret: Secret) -> SecretRead:
+    try:
+        value = decrypt_value(secret.value)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Stored secret could not be decrypted",
+        ) from exc
+
     return SecretRead.model_validate(
-        {"id": secret.id, "name": secret.name, "value": decrypt_value(secret.value),
+        {"id": secret.id, "name": secret.name, "value": value,
          "created_at": secret.created_at, "updated_at": secret.updated_at}
     )
 
