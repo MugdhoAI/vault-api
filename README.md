@@ -162,7 +162,7 @@ Start PostgreSQL and the API with Docker:
 docker compose up --build
 ```
 
-The API will be available at `http://localhost:8000`. Open `http://localhost:8000/docs` for the interactive API documentation. Docker Compose provides its own local development environment variables; it does not use values from `.env.example`.
+The API will be available at `http://localhost:8000`. Open `http://localhost:8000/docs` for the interactive API documentation. The local API and PostgreSQL ports are bound to loopback and are not exposed on other network interfaces by default. The API container runs as a non-root user and includes a health check. Docker Compose provides its own local development environment variables; it does not use values from `.env.example`.
 
 For a non-Docker setup, PostgreSQL must be running separately. Copy `.env.example` to `.env`, configure the connection string and generated secrets, then apply the database migrations before starting the API:
 
