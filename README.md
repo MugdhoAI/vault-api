@@ -49,6 +49,8 @@ Passwords are hashed with Argon2 rather than stored as plain text. Secret values
 
 The API decrypts a secret when returning it to its authenticated owner. This is server-side encryption, not end-to-end encryption.
 
+Successful secret creation, listing, retrieval, updates, and deletion are recorded in `audit_events` with the action, user ID, secret ID when applicable, and timestamp. Secret values are not included in these events. Authentication attempts are not currently audited.
+
 The Docker Compose configuration contains credentials and an encryption key intended only for local development. Do not reuse these values in a deployed environment. Use unique secrets supplied through an appropriate secret manager or deployment configuration.
 
 The encryption key is required to decrypt stored values. Losing all keys that can decrypt existing values can make those values unrecoverable. Back up the database and key material before rotating keys.
@@ -124,7 +126,7 @@ Known gaps include:
 
 * Authentication endpoints do not have rate limiting or brute-force protection.
 * Secret lifecycle actions are recorded in an audit log, but authentication attempts are not.
-* Encryption key rotation and recovery procedures are not implemented.
+* Key rotation is an operator run procedure. Automated key recovery and external key management are not provided.
 * Production deployment hardening, including TLS termination, operational monitoring, backup and restore validation, and deployment-specific secret management, has not been established by this repository.
 
 The audit log records action names, user IDs, secret IDs, and timestamps. It does not store secret values. These remaining gaps should be addressed and tested before considering a real deployment with sensitive data.
