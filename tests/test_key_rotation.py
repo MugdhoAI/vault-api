@@ -1,4 +1,5 @@
 import asyncio
+from typing import Self
 
 import pytest
 from cryptography.fernet import Fernet, InvalidToken
@@ -27,7 +28,7 @@ class FakeTransaction:
         self.session = session
         self.original_values: list[str] = []
 
-    async def __aenter__(self) -> "FakeTransaction":
+    async def __aenter__(self) -> Self:
         self.original_values = [record.value for record in self.session.records]
         return self
 
@@ -44,7 +45,7 @@ class FakeSession:
     def __init__(self, records: list[FakeSecret]) -> None:
         self.records = records
 
-    async def __aenter__(self) -> "FakeSession":
+    async def __aenter__(self) -> Self:
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback) -> bool:
