@@ -220,7 +220,9 @@ app/
 tests/
   test_auth.py
   test_config.py
+  test_crypto.py
   test_health.py
+  test_key_rotation.py
   test_schema_validation.py
   test_security.py
   test_secrets.py
