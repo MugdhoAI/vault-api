@@ -189,7 +189,7 @@ Run static checks with Ruff:
 ruff check .
 ```
 
-Tests cover password hashing, token handling, configuration validation, duplicate registration, invalid credentials, database health, secret CRUD operations, owner isolation, and request schema validation. GitHub Actions runs Ruff and the PostgreSQL-backed test suite for pushes to `main` and pull requests.
+Tests cover password hashing, token handling, configuration validation, encryption and key rotation, duplicate registration, invalid credentials, database health, secret CRUD operations, owner isolation, and request schema validation. GitHub Actions runs Ruff and the PostgreSQL-backed test suite for pushes to `main` and pull requests.
 
 ## Current limitations
 
@@ -220,7 +220,9 @@ app/
 tests/
   test_auth.py
   test_config.py
+  test_crypto.py
   test_health.py
+  test_key_rotation.py
   test_schema_validation.py
   test_security.py
   test_secrets.py
