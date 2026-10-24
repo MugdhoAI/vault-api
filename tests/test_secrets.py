@@ -39,6 +39,7 @@ def test_secret_lifecycle_and_user_isolation() -> None:
             json={"name": "database", "value": "initial-secret"},
         )
         assert created.status_code == 201
+        assert created.headers["cache-control"] == "no-store"
         secret = created.json()
         secret_id = secret["id"]
         assert secret["name"] == "database"
@@ -46,10 +47,12 @@ def test_secret_lifecycle_and_user_isolation() -> None:
 
         listed = client.get("/secrets", headers=owner_headers)
         assert listed.status_code == 200
+        assert listed.headers["cache-control"] == "no-store"
         assert [item["id"] for item in listed.json()] == [secret_id]
 
         other_access = client.get(f"/secrets/{secret_id}", headers=other_headers)
         assert other_access.status_code == 404
+        assert other_access.headers["cache-control"] == "no-store"
 
         updated = client.patch(
             f"/secrets/{secret_id}",
@@ -57,15 +60,18 @@ def test_secret_lifecycle_and_user_isolation() -> None:
             json={"name": "database-prod", "value": "updated-secret"},
         )
         assert updated.status_code == 200
+        assert updated.headers["cache-control"] == "no-store"
         assert updated.json()["name"] == "database-prod"
         assert updated.json()["value"] == "updated-secret"
 
         fetched = client.get(f"/secrets/{secret_id}", headers=owner_headers)
         assert fetched.status_code == 200
+        assert fetched.headers["cache-control"] == "no-store"
         assert fetched.json()["value"] == "updated-secret"
 
         deleted = client.delete(f"/secrets/{secret_id}", headers=owner_headers)
         assert deleted.status_code == 204
+        assert deleted.headers["cache-control"] == "no-store"
 
         missing = client.get(f"/secrets/{secret_id}", headers=owner_headers)
         assert missing.status_code == 404
