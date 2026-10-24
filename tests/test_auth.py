@@ -30,7 +30,9 @@ def test_login_rejects_invalid_password() -> None:
         )
 
     assert registered.status_code == 201
+    assert registered.headers["cache-control"] == "no-store"
     assert invalid_login.status_code == 401
+    assert invalid_login.headers["cache-control"] == "no-store"
     assert invalid_login.json()["detail"] == "Invalid credentials"
 
 
