@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 from cryptography.fernet import Fernet
 from pydantic import ValidationError
@@ -10,6 +12,21 @@ def test_production_rejects_default_jwt_secret() -> None:
         Settings(
             environment="production",
             jwt_secret="change-this-in-production",
+            encryption_key=Fernet.generate_key().decode(),
+        )
+
+
+def test_production_rejects_jwt_placeholder_from_env_example() -> None:
+    jwt_secret = next(
+        line.partition("=")[2]
+        for line in Path(".env.example").read_text(encoding="utf-8").splitlines()
+        if line.startswith("JWT_SECRET=")
+    )
+
+    with pytest.raises(ValidationError, match="Production JWT_SECRET"):
+        Settings(
+            environment="production",
+            jwt_secret=jwt_secret,
             encryption_key=Fernet.generate_key().decode(),
         )
 
@@ -90,6 +107,7 @@ def test_environment_rejects_unknown_values() -> None:
     with pytest.raises(ValidationError, match="environment"):
         Settings(environment="prod")
 
+
 def test_production_requires_database_tls() -> None:
     with pytest.raises(ValidationError, match="must enable PostgreSQL TLS"):
         Settings(
@@ -99,4 +117,3 @@ def test_production_requires_database_tls() -> None:
             encryption_key=Fernet.generate_key().decode(),
             rate_limit_storage_uri="redis://localhost:6379/0",
         )
-
