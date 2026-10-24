@@ -17,9 +17,10 @@ def test_production_rejects_default_jwt_secret() -> None:
 
 
 def test_production_rejects_jwt_placeholder_from_env_example() -> None:
+    example_file = Path(__file__).resolve().parents[1] / ".env.example"
     jwt_secret = next(
         line.partition("=")[2]
-        for line in Path(".env.example").read_text(encoding="utf-8").splitlines()
+        for line in example_file.read_text(encoding="utf-8").splitlines()
         if line.startswith("JWT_SECRET=")
     )
 
