@@ -23,7 +23,7 @@ Vault API is a hands-on way to study the full lifecycle of a sensitive backend r
 
 ## Stack
 
-* Python 3.12
+* Python 3.12+ (CI tested on 3.12, 3.13, and 3.14)
 * FastAPI
 * PostgreSQL
 * SQLAlchemy 2
@@ -234,7 +234,7 @@ Run static checks with Ruff:
 ruff check .
 ```
 
-Tests cover password hashing, token handling, configuration validation, encryption and key rotation, duplicate registration, invalid credentials, database health, secret CRUD operations, owner isolation, and request schema validation. GitHub Actions runs Ruff and the PostgreSQL-backed test suite for pushes to `main` and pull requests.
+Tests cover password hashing, token handling, configuration validation, encryption and key rotation, duplicate registration, invalid credentials, database health, secret CRUD operations, owner isolation, and request schema validation. CI runs Ruff, `pip-audit`, Docker image and Compose validation, and the PostgreSQL-backed test suite on Python 3.12, 3.13, and 3.14. CodeQL analyzes the Python code on pushes to `main` and pull requests targeting `main`.
 
 ## Current limitations
 
