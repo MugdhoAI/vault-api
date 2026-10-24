@@ -41,7 +41,7 @@ app.add_middleware(SlowAPIMiddleware)
 async def prevent_sensitive_response_caching(request: Request, call_next):
     response = await call_next(request)
     path = request.url.path
-    if path.startswith("/auth/") or path == "/secrets" or path.startswith("/secrets/"):
+    if path == "/secrets" or path.startswith(("/auth/", "/secrets/")):
         response.headers["Cache-Control"] = "no-store"
     return response
 
