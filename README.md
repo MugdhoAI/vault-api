@@ -1,8 +1,15 @@
 # Vault API
 
-A FastAPI REST API for authenticated secret storage with PostgreSQL, Argon2, JWT, and Fernet encryption.
+[![CI](https://github.com/MugdhoAI/vault-api/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MugdhoAI/vault-api/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/MugdhoAI/vault-api/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/MugdhoAI/vault-api/actions/workflows/codeql.yml)
 
-This project demonstrates backend engineering fundamentals through an asynchronous API, owner-scoped data access, request validation, integration tests, Docker based development, and continuous integration.
+A learning-focused FastAPI service for authenticated, owner-scoped secret storage. Secret values are encrypted with Fernet before being persisted to PostgreSQL.
+
+**Status:** This is a learning and portfolio project, not production ready. Do not store real credentials or sensitive data in it.
+
+## Why this project exists
+
+Vault API is a hands-on way to study the full lifecycle of a sensitive backend resource: authentication, per-user authorization, encryption at rest, schema migrations, key rotation, and audit events. The focus is on making those controls visible in code and tests, not claiming production-grade vault security.
 
 ## What it demonstrates
 
@@ -27,6 +34,42 @@ This project demonstrates backend engineering fundamentals through an asynchrono
 * pytest
 * Docker
 * GitHub Actions
+
+## Quickstart
+
+Requirements: Docker and Docker Compose.
+
+Clone the repository and start the local development stack:
+
+```bash
+git clone https://github.com/MugdhoAI/vault-api.git
+cd vault-api
+docker compose up --build
+```
+
+When the containers are healthy, open [the interactive API docs](http://localhost:8000/docs). Use only test accounts and non-sensitive example values. The local Compose configuration contains development credentials and is not suitable for deployment.
+
+## Architecture
+
+```mermaid
+flowchart TD
+    Client[Client] --> API[FastAPI routes]
+    API --> Auth[Register and login]
+    Auth --> Hash[Argon2 password hashing]
+    Auth --> Token[JWT access token]
+    Client -->|Bearer JWT| Protected[Protected secret routes]
+    Protected --> Identity[Validate token and load user]
+    Identity --> Scope[SQLAlchemy queries scoped by owner_id]
+    Scope <--> DB[(PostgreSQL)]
+    Protected --> Write[Create or update secret]
+    Write --> Encrypt[Fernet encryption]
+    Encrypt --> DB
+    DB --> Read[Return owner-scoped secret]
+    Read --> Decrypt[Fernet decryption]
+    Decrypt --> Client
+    Protected --> Audit[Record action metadata only]
+    Audit --> DB
+```
 
 ## API
 
@@ -208,28 +251,19 @@ These remaining gaps should be addressed and tested before considering a real de
 ## Project structure
 
 ```text
-app/
-  config.py       Application configuration
-  crypto.py       Secret encryption and decryption
-  db.py           Async SQLAlchemy setup
-  main.py         API routes and authentication flow
-  models.py       Database models
-  schemas.py      Request and response validation
-  security.py     Password hashing and JWT handling
-
-tests/
-  test_auth.py
-  test_config.py
-  test_crypto.py
-  test_health.py
-  test_key_rotation.py
-  test_schema_validation.py
-  test_security.py
-  test_secrets.py
-
+app/                    API routes, configuration, security, crypto, and data models
+migrations/             Versioned database schema migrations
+scripts/                Operator-run encryption key rotation
+tests/                  Authentication, configuration, crypto, rotation, and API tests
+.github/workflows/      CI and CodeQL workflows
+.env.example            Local configuration template
 Dockerfile
 docker-compose.yml
+alembic.ini
 pyproject.toml
+CONTRIBUTING.md
+SECURITY.md
+LICENSE
 ```
 
 ## License
