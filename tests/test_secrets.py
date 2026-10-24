@@ -50,9 +50,31 @@ def test_secret_lifecycle_and_user_isolation() -> None:
         assert listed.headers["cache-control"] == "no-store"
         assert [item["id"] for item in listed.json()] == [secret_id]
 
+        # A different user must not discover, read, modify, or delete this secret.
+        other_listed = client.get("/secrets", headers=other_headers)
+        assert other_listed.status_code == 200
+        assert other_listed.headers["cache-control"] == "no-store"
+        assert other_listed.json() == []
+
         other_access = client.get(f"/secrets/{secret_id}", headers=other_headers)
         assert other_access.status_code == 404
         assert other_access.headers["cache-control"] == "no-store"
+
+        other_update = client.patch(
+            f"/secrets/{secret_id}",
+            headers=other_headers,
+            json={"name": "stolen", "value": "stolen-secret"},
+        )
+        assert other_update.status_code == 404
+        assert other_update.headers["cache-control"] == "no-store"
+
+        other_delete = client.delete(f"/secrets/{secret_id}", headers=other_headers)
+        assert other_delete.status_code == 404
+        assert other_delete.headers["cache-control"] == "no-store"
+
+        still_owned = client.get(f"/secrets/{secret_id}", headers=owner_headers)
+        assert still_owned.status_code == 200
+        assert still_owned.json()["value"] == "initial-secret"
 
         updated = client.patch(
             f"/secrets/{secret_id}",
