@@ -35,6 +35,17 @@ app = FastAPI(title=settings.app_name, version="0.1.0", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
+
+
+@app.middleware("http")
+async def prevent_sensitive_response_caching(request: Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/auth/") or path == "/secrets" or path.startswith("/secrets/"):
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 bearer_scheme = HTTPBearer(auto_error=False)
 Session = Annotated[AsyncSession, Depends(get_session)]
 # Keep the password verification cost similar for unknown and existing accounts.
