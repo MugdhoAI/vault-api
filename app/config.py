@@ -37,8 +37,15 @@ class Settings(BaseSettings):
         if self.environment.lower() != "production":
             return self
 
-        if self.jwt_secret == "change-this-in-production" or len(self.jwt_secret) < 32:
-            raise ValueError("Production JWT_SECRET must not use the default and must be at least 32 characters")
+        jwt_secret = self.jwt_secret.strip()
+        known_jwt_placeholders = {
+            "change-this-in-production",
+            "replace-with-a-long-random-secret",
+        }
+        if jwt_secret.lower() in known_jwt_placeholders or len(jwt_secret) < 32:
+            raise ValueError(
+                "Production JWT_SECRET must not use a placeholder and must be at least 32 characters"
+            )
 
         try:
             Fernet(self.encryption_key.encode())
