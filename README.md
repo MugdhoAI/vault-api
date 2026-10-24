@@ -141,6 +141,8 @@ Passwords are hashed with Argon2 rather than stored as plain text. Secret values
 
 The API decrypts a secret when returning it to its authenticated owner. This is server-side encryption, not end-to-end encryption.
 
+Authentication and secret-management responses include `Cache-Control: no-store` so clients and intermediaries are instructed not to cache access tokens or decrypted secret values.
+
 Successful secret creation, listing, retrieval, updates, and deletion are recorded in `audit_events` with the action, user ID, secret ID when applicable, and timestamp. Secret values are not included in these events. Authentication attempts are not currently audited.
 
 The Docker Compose configuration contains credentials and an encryption key intended only for local development. Do not reuse these values in a deployed environment. Use unique secrets supplied through an appropriate secret manager or deployment configuration.
