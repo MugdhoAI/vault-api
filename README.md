@@ -1,5 +1,7 @@
 # Vault API
 
+![Vault API hero banner](docs/assets/vault-api-hero.svg)
+
 [![CI](https://github.com/MugdhoAI/vault-api/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MugdhoAI/vault-api/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/MugdhoAI/vault-api/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/MugdhoAI/vault-api/actions/workflows/codeql.yml)
 
