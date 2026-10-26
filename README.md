@@ -3,6 +3,23 @@
 [![CI](https://github.com/MugdhoAI/vault-api/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MugdhoAI/vault-api/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/MugdhoAI/vault-api/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/MugdhoAI/vault-api/actions/workflows/codeql.yml)
 
+```mermaid
+flowchart TB
+    VAULT["▣  VAULT API<br/>Authenticated Secret Vault"]
+    subgraph FLOW["DATA IN MOTION"]
+        direction LR
+        D1["•••"] --> D2["key : encrypted value"] --> D3["•••"] --> D4["key : encrypted value"] --> D5["•••"]
+    end
+    VAULT -->|"Fernet encrypted at rest"| STORE[("PostgreSQL")]
+    FLOW -. "secret requests" .-> VAULT
+
+    style VAULT fill:#0b1724,stroke:#38bdf8,color:#f0f9ff,stroke-width:2px
+    style FLOW fill:#080d14,stroke:#26394d,color:#94a3b8
+    style STORE fill:#102033,stroke:#38bdf8,color:#e0f2fe
+    style D2 fill:#111827,stroke:#334155,color:#cbd5e1
+    style D4 fill:#111827,stroke:#334155,color:#cbd5e1
+```
+
 A learning-focused FastAPI service for authenticated, owner-scoped secret storage. Secret values are encrypted with Fernet before being persisted to PostgreSQL.
 
 **Status:** This is a learning and portfolio project, not production ready. Do not store real credentials or sensitive data in it.
