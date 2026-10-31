@@ -1,16 +1,37 @@
-# Vault API
+<p align="center">
+  <img src="docs/assets/vault-api-hero.svg" alt="Vault API: a secure secret vault — what the owner sends, Fernet encryption, and what PostgreSQL actually stores" width="100%">
+</p>
 
-![Vault API hero banner](docs/assets/vault-api-hero.svg)
+<h1 align="center">MugdhoAI / <a href="https://github.com/MugdhoAI/vault-api">vault-api</a></h1>
 
-[![CI](https://github.com/MugdhoAI/vault-api/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MugdhoAI/vault-api/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/MugdhoAI/vault-api/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/MugdhoAI/vault-api/actions/workflows/codeql.yml)
+<p align="center">
+  <a href="https://github.com/MugdhoAI/vault-api/actions/workflows/ci.yml"><img src="https://github.com/MugdhoAI/vault-api/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="https://github.com/MugdhoAI/vault-api/actions/workflows/codeql.yml"><img src="https://github.com/MugdhoAI/vault-api/actions/workflows/codeql.yml/badge.svg?branch=main" alt="CodeQL"></a>
+  <a href="https://github.com/MugdhoAI/vault-api/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14-3776AB?logo=python&logoColor=white" alt="Python 3.12, 3.13, and 3.14">
+</p>
+
+<p align="center">
+  <strong>Store secrets. Keep control.</strong><br>
+  A learning-focused FastAPI service for authenticated, owner-scoped secret storage. Secret values are encrypted with Fernet before being persisted to PostgreSQL.
+</p>
+
+<table>
+  <tr>
+    <td align="center" width="20%"><strong>Authentication</strong><br><sub>Argon2 password hashing and JWT access tokens</sub></td>
+    <td align="center" width="20%"><strong>Owner-Scoped Access</strong><br><sub>Every secret query filtered by owner_id</sub></td>
+    <td align="center" width="20%"><strong>Encryption at Rest</strong><br><sub>Fernet-encrypted values in PostgreSQL</sub></td>
+    <td align="center" width="20%"><strong>Audit Events</strong><br><sub>Action metadata recorded, never secret values</sub></td>
+    <td align="center" width="20%"><strong>Key Rotation</strong><br><sub>Stored secrets re-encrypted under a new key</sub></td>
+  </tr>
+</table>
 
 ```mermaid
 flowchart TB
     VAULT["▣  VAULT API<br/>Authenticated Secret Vault"]
     subgraph FLOW["DATA IN MOTION"]
         direction LR
-        D1["•••"] --> D2["key : encrypted value"] --> D3["•••"] --> D4["key : encrypted value"] --> D5["•••"]
+        D1["POST /secrets"] --> D2["{ #quot;name#quot;: #quot;demo#quot;,<br/>#quot;value#quot;: #quot;not-a-real-secret#quot; }"] --> D3["GET /secrets/{id}"] --> D4["{ #quot;id#quot;: 1, #quot;name#quot;: #quot;demo#quot;,<br/>#quot;value#quot;: #quot;not-a-real-secret#quot; }"]
     end
     VAULT -->|"Fernet encrypted at rest"| STORE[("PostgreSQL")]
     FLOW -. "secret requests" .-> VAULT
@@ -18,11 +39,11 @@ flowchart TB
     style VAULT fill:#0b1724,stroke:#38bdf8,color:#f0f9ff,stroke-width:2px
     style FLOW fill:#080d14,stroke:#26394d,color:#94a3b8
     style STORE fill:#102033,stroke:#38bdf8,color:#e0f2fe
+    style D1 fill:#111827,stroke:#334155,color:#cbd5e1
     style D2 fill:#111827,stroke:#334155,color:#cbd5e1
+    style D3 fill:#111827,stroke:#334155,color:#cbd5e1
     style D4 fill:#111827,stroke:#334155,color:#cbd5e1
 ```
-
-A learning-focused FastAPI service for authenticated, owner-scoped secret storage. Secret values are encrypted with Fernet before being persisted to PostgreSQL.
 
 **Status:** This is a learning and portfolio project, not production ready. Do not store real credentials or sensitive data in it.
 
