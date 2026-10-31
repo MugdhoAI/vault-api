@@ -16,16 +16,6 @@
   A learning-focused FastAPI service for authenticated, owner-scoped secret storage. Secret values are encrypted with Fernet before being persisted to PostgreSQL.
 </p>
 
-<table>
-  <tr>
-    <td align="center" width="20%"><strong>Authentication</strong><br><sub>Argon2 password hashing and JWT access tokens</sub></td>
-    <td align="center" width="20%"><strong>Owner-Scoped Access</strong><br><sub>Every secret query filtered by owner_id</sub></td>
-    <td align="center" width="20%"><strong>Encryption at Rest</strong><br><sub>Fernet-encrypted values in PostgreSQL</sub></td>
-    <td align="center" width="20%"><strong>Audit Events</strong><br><sub>Action metadata recorded, never secret values</sub></td>
-    <td align="center" width="20%"><strong>Key Rotation</strong><br><sub>Stored secrets re-encrypted under a new key</sub></td>
-  </tr>
-</table>
-
 ```mermaid
 flowchart TB
     VAULT["▣  VAULT API<br/>Authenticated Secret Vault"]
