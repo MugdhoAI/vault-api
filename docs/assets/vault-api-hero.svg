@@ -1,60 +1,93 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500" role="img" aria-labelledby="title desc">
-<title id="title">Vault API — Store Secrets. Keep Control.</title>
-<desc id="desc">A dark blue technical banner for a learning-focused secret vault API, with a vault mascot, PostgreSQL storage, API request examples, and security features.</desc>
-<defs>
-  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#050a12"/><stop offset=".58" stop-color="#071729"/><stop offset="1" stop-color="#02060c"/></linearGradient>
-  <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#2563eb"/></linearGradient>
-  <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#193b5c"/><stop offset=".5" stop-color="#0b1d32"/><stop offset="1" stop-color="#142c46"/></linearGradient>
-  <filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-</defs>
-<rect width="1500" height="500" rx="20" fill="url(#bg)"/>
-<rect x="1" y="1" width="1498" height="498" rx="19" fill="none" stroke="#263b52" stroke-width="2"/>
-<g opacity=".18" stroke="#1768a9" stroke-width="1"><path d="M620 30V470M680 30V470M740 30V470M800 30V470M860 30V470M920 30V470M980 30V470M1040 30V470M1100 30V470M1160 30V470M1220 30V470M1280 30V470"/><path d="M600 80H1460M600 140H1460M600 200H1460M600 260H1460M600 320H1460M600 380H1460M600 440H1460"/></g>
-<text x="58" y="77" fill="#38bdf8" font-family="monospace" font-size="18" letter-spacing="5">A SECURE SECRET VAULT API</text>
-<text x="55" y="185" fill="#f8fafc" font-family="Arial, Helvetica, sans-serif" font-size="98" font-weight="800" letter-spacing="-3">vault<tspan fill="url(#blue)">-api</tspan></text>
-<text x="60" y="252" fill="#f8fafc" font-family="Arial, Helvetica, sans-serif" font-size="39" font-weight="700">Store Secrets. <tspan fill="#38bdf8">Keep Control.</tspan></text>
-<text x="60" y="300" fill="#cbd5e1" font-family="Arial, Helvetica, sans-serif" font-size="21">A learning-focused secret vault API with secure authentication,</text>
-<text x="60" y="332" fill="#cbd5e1" font-family="Arial, Helvetica, sans-serif" font-size="21">encrypted secret storage, and PostgreSQL persistence.</text>
-<text x="60" y="408" fill="#7dd3fc" font-family="monospace" font-size="15" letter-spacing="1.5">FASTAPI  •  POSTGRESQL  •  JWT  •  ARGON2  •  FERNET</text>
-<g transform="translate(930 105)">
-  <ellipse cx="160" cy="310" rx="190" ry="24" fill="#0284c7" opacity=".16" filter="url(#glow)"/>
-  <rect x="0" y="96" width="325" height="214" rx="34" fill="url(#steel)" stroke="#38bdf8" stroke-width="3"/>
-  <rect x="15" y="111" width="295" height="184" rx="26" fill="none" stroke="#1e6092" stroke-width="2"/>
-  <rect x="62" y="130" width="200" height="142" rx="24" fill="#07111f" stroke="#24577f" stroke-width="2"/>
-  <path d="M126 178v-13a36 36 0 0 1 72 0v13" fill="none" stroke="#38bdf8" stroke-width="9" stroke-linecap="round"/>
-  <rect x="113" y="174" width="98" height="67" rx="14" fill="#102b45" stroke="#38bdf8" stroke-width="3"/>
-  <circle cx="162" cy="199" r="9" fill="#38bdf8"/><path d="M162 205v14" stroke="#38bdf8" stroke-width="5" stroke-linecap="round"/>
-  <circle cx="45" cy="202" r="12" fill="#0b1727" stroke="#38bdf8" stroke-width="3"/><circle cx="280" cy="202" r="12" fill="#0b1727" stroke="#38bdf8" stroke-width="3"/>
-  <rect x="126" y="82" width="74" height="20" rx="8" fill="#183e60" stroke="#38bdf8" stroke-width="2"/>
-  <text x="162" y="348" fill="#93c5fd" font-family="monospace" font-size="17" text-anchor="middle">VAULT / LOCKED</text>
-  <path d="M325 145h38v-35h24" fill="none" stroke="#38bdf8" stroke-width="2"/>
-  <path d="M325 255h48v32h14" fill="none" stroke="#38bdf8" stroke-width="2"/>
-  <circle cx="387" cy="110" r="4" fill="#38bdf8" filter="url(#glow)"/><circle cx="387" cy="287" r="4" fill="#38bdf8" filter="url(#glow)"/>
-</g>
-<g transform="translate(705 38)">
-  <rect width="278" height="116" rx="10" fill="#030914" stroke="#1d4c76" stroke-width="1.5"/>
-  <text x="18" y="27" fill="#38bdf8" font-family="monospace" font-size="14">POST /secrets</text>
-  <text x="18" y="50" fill="#cbd5e1" font-family="monospace" font-size="13">{ "name": "api_key",</text>
-  <text x="18" y="70" fill="#cbd5e1" font-family="monospace" font-size="13">  "value": "••••••••",</text>
-  <text x="18" y="90" fill="#cbd5e1" font-family="monospace" font-size="13">  "owner": "user" }</text>
-</g>
-<g transform="translate(1160 45)">
-  <rect width="280" height="120" rx="10" fill="#030914" stroke="#1d4c76" stroke-width="1.5"/>
-  <g fill="#7dd3fc" font-family="monospace" font-size="15">
-    <text x="20" y="28">✓  JWT Authentication</text><text x="20" y="54">✓  Argon2 Password Hashing</text><text x="20" y="80">✓  Fernet Encryption</text><text x="20" y="106">✓  PostgreSQL Storage</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500" fill="none">
+  <defs>
+    <linearGradient id="bg7" x1="0" y1="0" x2="1500" y2="500" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#04060C"/><stop offset=".55" stop-color="#060B16"/><stop offset="1" stop-color="#0A1322"/>
+    </linearGradient>
+    <linearGradient id="blue7" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#C4E2FF"/><stop offset="1" stop-color="#1D5FE0"/>
+    </linearGradient>
+    <linearGradient id="cardL" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#0C1220"/><stop offset="1" stop-color="#080C15"/>
+    </linearGradient>
+    <linearGradient id="cardR" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#0B1832"/><stop offset="1" stop-color="#081020"/>
+    </linearGradient>
+    <linearGradient id="accentStroke" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#C4E2FF"/><stop offset="1" stop-color="#1D5FE0"/>
+    </linearGradient>
+    <linearGradient id="ivoryGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#FFFFFF"/><stop offset="1" stop-color="#D6E3F4"/>
+    </linearGradient>
+    <linearGradient id="lineGrad" x1="216" y1="0" x2="1284" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#64A8FF" stop-opacity="0"/><stop offset=".5" stop-color="#64A8FF" stop-opacity=".55"/><stop offset="1" stop-color="#64A8FF" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="glowRad" cx=".5" cy=".5" r=".5">
+      <stop stop-color="#3D7BFF" stop-opacity=".20"/><stop offset="1" stop-color="#3D7BFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="16"/></filter>
+  </defs>
+  <rect width="1500" height="500" rx="20" fill="url(#bg7)"/>
+  <rect x="1" y="1" width="1498" height="498" rx="19" stroke="#25334B" stroke-width="2"/>
+  <ellipse cx="1170" cy="30" rx="760" ry="340" fill="url(#glowRad)"/>
+  <ellipse cx="90" cy="490" rx="520" ry="240" fill="url(#glowRad)" opacity=".4"/>
+
+  <!-- Top row -->
+  <text x="56" y="54" fill="#64A8FF" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="13" letter-spacing="3.5">A SECURE SECRET VAULT API</text>
+  <text x="1444" y="54" fill="#68788F" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="13" letter-spacing="3.5" text-anchor="end">FASTAPI · POSTGRESQL · PYTHON</text>
+
+  <!-- Poster lockup: hyphen is a key -->
+  <text x="402" y="176" fill="url(#ivoryGrad)" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="118" font-weight="800" letter-spacing="-3">vault</text>
+  <g stroke="#64A8FF" stroke-width="7.5" fill="none">
+    <circle cx="762" cy="132" r="16"/>
+    <path d="M778 132h62"/>
   </g>
-</g>
-<g transform="translate(730 370)">
-  <ellipse cx="54" cy="18" rx="48" ry="14" fill="#0b2741" stroke="#38bdf8" stroke-width="2"/>
-  <path d="M6 18v43c0 9 96 9 96 0V18M6 39c0 9 96 9 96 0" fill="#0b1b2e" stroke="#38bdf8" stroke-width="2"/>
-  <ellipse cx="54" cy="61" rx="48" ry="14" fill="#0b1b2e" stroke="#38bdf8" stroke-width="2"/>
-  <text x="54" y="91" fill="#93c5fd" font-family="monospace" font-size="12" text-anchor="middle">PostgreSQL</text>
-</g>
-<g transform="translate(1190 235)">
-  <rect width="238" height="100" rx="12" fill="#07111f" stroke="#1e5b8d" stroke-width="2"/>
-  <path d="M101 35v-8a18 18 0 0 1 36 0v8" fill="none" stroke="#38bdf8" stroke-width="5" stroke-linecap="round"/>
-  <rect x="92" y="34" width="54" height="42" rx="8" fill="#102b45" stroke="#38bdf8" stroke-width="2"/>
-  <circle cx="119" cy="52" r="5" fill="#38bdf8"/><path d="M119 56v9" stroke="#38bdf8" stroke-width="3"/>
-  <text x="119" y="91" fill="#7dd3fc" font-family="monospace" font-size="12" text-anchor="middle">ENCRYPTED AT REST</text>
-</g>
+  <g stroke="#64A8FF" stroke-width="7.5">
+    <path d="M816 132v17"/>
+    <path d="M834 132v13"/>
+  </g>
+  <text x="856" y="176" fill="url(#blue7)" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="118" font-weight="800" letter-spacing="-3">api</text>
+
+  <!-- Transformation strip -->
+  <g>
+    <rect x="84" y="198" width="560" height="166" rx="13" fill="url(#cardL)" stroke="#2C3D5C" stroke-width="1.5"/>
+    <text x="110" y="226" fill="#8B9DB8" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="11.5" letter-spacing="2.5">WHAT THE OWNER SENDS</text>
+    <g font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="15.5" fill="#E4ECF7">
+      <text x="110" y="258">{</text>
+      <text x="134" y="281">"name":&#160; "demo",</text>
+      <text x="134" y="304">"value": <tspan fill="#FBFDFF" font-weight="700">"not-a-real-secret"</tspan></text>
+      <text x="110" y="327">}</text>
+    </g>
+    <text x="110" y="352" fill="#68788F" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12.5">Authenticated · visible only to its owner</text>
+  </g>
+  <g>
+    <rect x="856" y="198" width="560" height="166" rx="13" fill="url(#cardR)" stroke="url(#accentStroke)" stroke-width="2"/>
+    <text x="882" y="226" fill="#64A8FF" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="11.5" letter-spacing="2.5">WHAT POSTGRESQL ACTUALLY STORES</text>
+    <g font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="15.5" fill="#C6D4E8">
+      <text x="882" y="258">{</text>
+      <text x="906" y="281">"name":&#160; "demo",</text>
+      <text x="906" y="304">"value": <tspan fill="#A5D4FF">"gAAAAABnR4…k7Qx9Z=="</tspan></text>
+      <text x="882" y="327">}</text>
+    </g>
+    <g fill="#1E4E79">
+      <rect x="882" y="342" width="46" height="9" rx="3"/><rect x="934" y="342" width="76" height="9" rx="3" fill="#2F6FD0" fill-opacity=".55"/><rect x="1016" y="342" width="34" height="9" rx="3"/><rect x="1056" y="342" width="84" height="9" rx="3" fill="#64A8FF" fill-opacity=".4"/><rect x="1146" y="342" width="50" height="9" rx="3"/><rect x="1202" y="342" width="68" height="9" rx="3" fill="#2F6FD0" fill-opacity=".4"/>
+    </g>
+  </g>
+
+  <!-- Fernet keyhole between the cards -->
+  <path d="M644 281h60" stroke="#64A8FF" stroke-width="2.5"/>
+  <path d="M796 281h60" stroke="#64A8FF" stroke-width="2.5"/>
+  <circle cx="750" cy="281" r="57" fill="#64A8FF" opacity=".26" filter="url(#soft)"/>
+  <circle cx="750" cy="281" r="41" fill="url(#blue7)"/>
+  <circle cx="750" cy="269" r="9" fill="#050B16"/>
+  <path d="M742 275h16l6 21h-28z" fill="#050B16"/>
+  <text x="750" y="342" fill="#E4ECF7" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="10.5" font-weight="700" letter-spacing="2.5" text-anchor="middle">FERNET</text>
+
+  <!-- Tagline: the V4 explanation, kept -->
+  <text x="696" y="402" fill="#EFF6FF" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="27" font-weight="700" text-anchor="end">Readable to its owner.</text>
+  <text x="708" y="402" fill="url(#blue7)" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="27" font-weight="700">Gibberish to everyone else.</text>
+
+  <!-- Endpoint menu -->
+  <path d="M216 424H1284" stroke="url(#lineGrad)"/>
+  <text x="750" y="449" fill="#A9C3E4" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="13.5" text-anchor="middle">POST /secrets&#160;&#160;·&#160;&#160;GET /secrets/{id}&#160;&#160;·&#160;&#160;PATCH /secrets/{id}&#160;&#160;·&#160;&#160;DELETE /secrets/{id}&#160;&#160;·&#160;&#160;POST /auth/token&#160;&#160;·&#160;&#160;GET /health</text>
+  <text x="750" y="474" fill="#68788F" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="11.5" letter-spacing="2.5" text-anchor="middle">ARGON2 · JWT · OWNER-SCOPED · AUDIT EVENTS WITHOUT VALUES — STORE SECRETS. KEEP CONTROL.</text>
 </svg>
