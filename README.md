@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/vault-api-hero.svg" alt="Vault API: a secure secret vault — what the owner sends, Fernet encryption, and what PostgreSQL actually stores" width="100%">
+  <img src="docs/assets/vault-api-hero.svg?v=2" alt="Vault API: a secure secret vault — what the owner sends, Fernet encryption, and what PostgreSQL actually stores" width="100%">
 </p>
 
 <h1 align="center">MugdhoAI / <a href="https://github.com/MugdhoAI/vault-api">vault-api</a></h1>
