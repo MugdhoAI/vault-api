@@ -36,3 +36,18 @@ def test_invalid_ciphertext_fails_without_exposing_ciphertext(monkeypatch) -> No
         crypto.decrypt_value("not-a-fernet-token")
 
     assert "not-a-fernet-token" not in str(error.value)
+
+
+def test_non_utf8_plaintext_fails_with_the_same_safe_error(monkeypatch) -> None:
+    key = Fernet.generate_key().decode()
+    monkeypatch.setattr(
+        crypto,
+        "get_settings",
+        lambda: Settings(encryption_key=key),
+    )
+    ciphertext = Fernet(key.encode()).encrypt(b"\xff\xfe\xfd").decode()
+
+    with pytest.raises(ValueError, match="Stored secret cannot be decrypted") as error:
+        crypto.decrypt_value(ciphertext)
+
+    assert type(error.value) is ValueError
