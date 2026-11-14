@@ -17,6 +17,11 @@ class SecretCreate(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     value: str = Field(min_length=1, max_length=10000)
 
+    @field_validator("name", mode="before")
+    @classmethod
+    def strip_name_before_length_check(cls, value: object) -> object:
+        return value.strip() if isinstance(value, str) else value
+
     @field_validator("name")
     @classmethod
     def validate_name(cls, value: str) -> str:
@@ -29,6 +34,11 @@ class SecretCreate(BaseModel):
 class SecretUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=120)
     value: str | None = Field(default=None, min_length=1, max_length=10000)
+
+    @field_validator("name", mode="before")
+    @classmethod
+    def strip_name_before_length_check(cls, value: object) -> object:
+        return value.strip() if isinstance(value, str) else value
 
     @field_validator("name")
     @classmethod
