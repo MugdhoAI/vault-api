@@ -28,5 +28,5 @@ def encrypt_value(value: str) -> str:
 def decrypt_value(value: str) -> str:
     try:
         return _cipher().decrypt(value.encode()).decode()
-    except InvalidToken as exc:
+    except (InvalidToken, UnicodeDecodeError) as exc:
         raise ValueError("Stored secret cannot be decrypted") from exc
