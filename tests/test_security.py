@@ -9,6 +9,12 @@ def test_password_hash_is_not_plaintext() -> None:
     assert not verify_password("wrong password", hashed)
 
 
+def test_verify_password_returns_false_for_unrecognised_hash() -> None:
+    assert not verify_password("correct horse battery staple", "not-a-hash")
+    assert not verify_password("correct horse battery staple", "")
+    assert not verify_password("correct horse battery staple", "$argon2id$invalid")
+
+
 def test_access_token_round_trip() -> None:
     token = create_access_token("user@example.com")
     assert decode_subject(token) == "user@example.com"

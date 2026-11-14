@@ -3,6 +3,7 @@ from datetime import UTC, datetime, timedelta
 import jwt
 from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
+from pwdlib.exceptions import PwdlibError
 
 from app.config import get_settings
 
@@ -14,7 +15,10 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(password: str, hashed: str) -> bool:
-    return password_hash.verify(password, hashed)
+    try:
+        return password_hash.verify(password, hashed)
+    except PwdlibError:
+        return False
 
 
 def create_access_token(subject: str) -> str:
